@@ -821,3 +821,13 @@ svg {
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
 }
+
+.json-block {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: #fbfcfa;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
