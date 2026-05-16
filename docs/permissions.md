@@ -1,0 +1,3 @@
+# Permissions
+
+Reglas de permisos.

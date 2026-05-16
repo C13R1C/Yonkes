@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Red de Yonkes{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body data-active-module="{{ active_module|default:'' }}">
+    <header class="app-navbar">
+        <div class="navbar-brand-group">
+            <button class="icon-button sidebar-toggle" type="button" aria-label="Abrir menú" aria-controls="app-sidebar" aria-expanded="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+
+            <a class="app-brand" href="#" aria-label="Red de Yonkes">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M5 16.5h14l-1.3-5.2A3 3 0 0 0 14.8 9H9.2a3 3 0 0 0-2.9 2.3L5 16.5Z"></path>
+                        <path d="M7 16.5V18a1.5 1.5 0 0 0 3 0v-1.5M14 16.5V18a1.5 1.5 0 0 0 3 0v-1.5M8 13h8"></path>
+                    </svg>
+                </span>
+                <span class="brand-text">Red de Yonkes</span>
+            </a>
+        </div>
+
+        <form class="global-search" role="search" data-global-search>
+            <label class="sr-only" for="global-search-input">Buscar</label>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"></path>
+            </svg>
+            <input id="global-search-input" name="q" type="search" placeholder="Buscar piezas, vehículos o yonkes…" autocomplete="off">
+        </form>
+
+        <nav class="navbar-actions" aria-label="Acciones superiores">
+            <button class="icon-button" type="button" aria-label="Notificaciones">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                    <path d="M10 21h4"></path>
+                </svg>
+            </button>
+            <button class="icon-button" type="button" aria-label="Ayuda">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 18h.01"></path>
+                    <path d="M9.1 9a3 3 0 1 1 5.8 1c-.5 1.2-1.7 1.7-2.4 2.5-.4.5-.5.9-.5 1.5"></path>
+                    <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"></path>
+                </svg>
+            </button>
+
+            <div class="user-menu" data-user-menu>
+                <button class="user-menu-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                    <span class="avatar" aria-hidden="true">A</span>
+                    <span class="user-name">Administrador</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m6 9 6 6 6-6"></path>
+                    </svg>
+                </button>
+                <div class="user-dropdown" role="menu">
+                    <a href="#" role="menuitem">Perfil</a>
+                    <a href="#" role="menuitem">Configuración</a>
+                    <a href="#" role="menuitem">Cerrar sesión</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="sidebar-backdrop" data-sidebar-backdrop></div>
+
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Navegacion principal">
+        <nav class="sidebar-nav">
+            <a class="sidebar-link {% if active_module == 'dashboard' %}is-active{% endif %}" href="#" data-module="dashboard">
+                <span class="sidebar-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M4 13h6V4H4v9ZM14 20h6V4h-6v16ZM4 20h6v-3H4v3Z"></path></svg>
+                </span>
+                Dashboard
+            </a>
+            <a class="sidebar-link {% if active_module == 'yonkes' %}is-active{% endif %}" href="#" data-module="yonkes">
+                <span class="sidebar-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6M8 11h.01M16 11h.01"></path></svg>
+                </span>
+                Yonkes
+            </a>
+            <a class="sidebar-link {% if active_module == 'vehiculos' %}is-active{% endif %}" href="#" data-module="vehiculos">
+                <span class="sidebar-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M5 17h14l-1-5H6l-1 5ZM7 17v2M17 17v2M8 12l1.4-4h5.2L16 12"></path></svg>
+                </span>
+                Vehículos
+            </a>
+            <a class="sidebar-link {% if active_module == 'piezas' %}is-active{% endif %}" href="#" data-module="piezas">
+                <span class="sidebar-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="m14.7 6.3 3 3M5 19l6.5-6.5M13 5l6 6-8 8H5v-6l8-8Z"></path></svg>
+                </span>
+                Piezas
+            </a>
+            <a class="sidebar-link {% if active_module == 'busqueda' %}is-active{% endif %}" href="#" data-module="busqueda">
+                <span class="sidebar-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="m21 21-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"></path></svg>
+                </span>
+                Búsqueda
+            </a>
+            <a class="sidebar-link {% if active_module == 'catalogos' %}is-active{% endif %}" href="#" data-module="catalogos">
+                <span class="sidebar-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16M8 5v14"></path></svg>
+                </span>
+                Catálogos
+            </a>
+            <a class="sidebar-link {% if active_module == 'importaciones' %}is-active{% endif %}" href="#" data-module="importaciones">
+                <span class="sidebar-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4M5 21h14"></path></svg>
+                </span>
+                Importaciones
+            </a>
+            <a class="sidebar-link {% if active_module == 'auditoria' %}is-active{% endif %}" href="#" data-module="auditoria">
+                <span class="sidebar-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M9 11h6M9 15h6M7 3h10v18H7zM5 7h2M17 7h2"></path></svg>
+                </span>
+                Auditoría
+            </a>
+            <a class="sidebar-link {% if active_module == 'usuarios' %}is-active{% endif %}" href="#" data-module="usuarios">
+                <span class="sidebar-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"></path></svg>
+                </span>
+                Usuarios
+            </a>
+        </nav>
+    </aside>
+
+    <main class="app-main" id="main-content">
+        <section class="page-shell">
+            <div class="breadcrumb">
+                {% block breadcrumbs %}{% endblock %}
+            </div>
+            <div class="page-heading">
+                {% block page_title %}{% endblock %}
+            </div>
+            {% block content %}{% endblock %}
+        </section>
+
+        <footer class="app-footer">
+            <span>&copy; 2024 Red de Yonkes. Todos los derechos reservados.</span>
+            <nav aria-label="Enlaces legales">
+                <a href="#">Términos</a>
+                <a href="#">Privacidad</a>
+                <a href="#">Ayuda</a>
+            </nav>
+        </footer>
+    </main>
+
+    <div class="search-feedback" data-search-feedback aria-live="polite"></div>
+    <script src="{% static 'js/base.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
