@@ -795,3 +795,15 @@ svg {
         grid-template-columns: 1fr;
     }
 }
+
+.section-stack { margin-bottom: 20px; }
+.inline-actions { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+.details-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px; }
+.details-grid .full-width { grid-column: 1 / -1; }
+.form-errors { color: var(--color-danger); background: #fee4e2; border: 1px solid #fecdca; padding: 10px 12px; border-radius: var(--radius); }
+.field-error { color: var(--color-danger); font-size: 13px; }
+.form-checkbox { width: 18px; height: 18px; accent-color: var(--color-primary); }
+
+@media (max-width: 760px) {
+  .details-grid { grid-template-columns: 1fr; }
+}
