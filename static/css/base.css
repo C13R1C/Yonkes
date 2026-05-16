@@ -815,3 +815,9 @@ svg {
 .result-card {
   padding: 16px;
 }
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
