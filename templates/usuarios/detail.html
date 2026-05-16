@@ -1,0 +1,20 @@
+{% extends "layout/base.html" %}
+{% block title %}{{ user_obj.username }} | Usuarios{% endblock %}
+{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/usuarios/">Usuarios</a><span>/</span><span>Detalle</span>{% endblock %}
+{% block page_title %}<h1>{% if user_obj.first_name or user_obj.last_name %}{{ user_obj.first_name }} {{ user_obj.last_name }}{% else %}{{ user_obj.username }}{% endif %}</h1>{% endblock %}
+{% block content %}
+<section class="card section-stack"><div class="details-grid">
+<div><strong>Username:</strong> {{ user_obj.username }}</div>
+<div><strong>Nombre:</strong> {{ user_obj.first_name|default:'Sin datos' }}</div>
+<div><strong>Apellido:</strong> {{ user_obj.last_name|default:'Sin datos' }}</div>
+<div><strong>Email:</strong> {{ user_obj.email|default:'Sin datos' }}</div>
+<div><strong>Rol:</strong> {{ profile.get_rol_display|default:'Sin datos' }}</div>
+<div><strong>Yonke asociado:</strong> {% if profile.yonke %}{{ profile.yonke.nombre }}{% else %}Sin datos{% endif %}</div>
+<div><strong>Teléfono:</strong> {{ profile.telefono|default:'Sin datos' }}</div>
+<div><strong>Activo:</strong> {{ profile.activo|yesno:"Sí,No" }}</div>
+<div><strong>Staff:</strong> {{ user_obj.is_staff|yesno:"Sí,No" }}</div>
+<div><strong>Superusuario:</strong> {{ user_obj.is_superuser|yesno:"Sí,No" }}</div>
+<div><strong>Fecha de registro:</strong> {{ user_obj.date_joined|date:"Y-m-d H:i" }}</div>
+<div><strong>Último acceso:</strong> {{ user_obj.last_login|date:"Y-m-d H:i"|default:'Sin datos' }}</div>
+</div><div class="inline-actions"><a class="btn btn-secondary" href="/usuarios/">Volver</a><a class="btn btn-primary" href="/usuarios/{{ user_obj.id }}/editar/">Editar</a></div></section>
+{% endblock %}
