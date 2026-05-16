@@ -7,6 +7,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path("", include("apps.yonkes.html_urls")),
     path("", include("apps.inventario.html_urls")),
+    path("", include("apps.busqueda.html_urls")),
     path("", include("apps.dashboard.urls")),
     path("admin/", admin.site.urls),
 

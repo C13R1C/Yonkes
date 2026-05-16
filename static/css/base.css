@@ -807,3 +807,11 @@ svg {
 @media (max-width: 760px) {
   .details-grid { grid-template-columns: 1fr; }
 }
+
+.results-grid {
+  display: grid;
+  gap: 14px;
+}
+.result-card {
+  padding: 16px;
+}
