@@ -1,0 +1,33 @@
+{% extends "layout/base.html" %}
+{% block title %}Importación #{{ importacion.id }} | Red de Yonkes{% endblock %}
+{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/importaciones/">Importaciones</a><span>/</span><span>Detalle</span>{% endblock %}
+{% block page_title %}<h1>Importación #{{ importacion.id }}</h1>{% endblock %}
+{% block content %}
+<section class="card section-stack">
+  <div class="form-errors full-width">{{ aviso_procesamiento }}</div>
+  <div class="details-grid">
+    <div><strong>Yonke:</strong> {{ importacion.yonke.nombre }}</div>
+    <div><strong>Tipo:</strong> {{ importacion.get_tipo_importacion_display }}</div>
+    <div><strong>Archivo:</strong> {% if importacion.archivo %}<a href="{{ importacion.archivo.url }}">{{ importacion.archivo.name }}</a>{% else %}—{% endif %}</div>
+    <div><strong>Estado:</strong> {{ importacion.get_estado_display }}</div>
+    <div><strong>Total filas:</strong> {{ importacion.total_filas }}</div>
+    <div><strong>Filas válidas:</strong> {{ importacion.filas_validas }}</div>
+    <div><strong>Filas con error:</strong> {{ importacion.filas_con_error }}</div>
+    <div><strong>Creado:</strong> {{ importacion.creado_en|date:"Y-m-d H:i" }}</div>
+    <div><strong>Actualizado:</strong> {{ importacion.actualizado_en|date:"Y-m-d H:i" }}</div>
+    <div class="full-width"><strong>Resultado JSON:</strong><pre class="json-block">{{ importacion.resultado|default:"{}" }}</pre></div>
+  </div>
+  <div class="inline-actions"><a class="btn btn-secondary" href="/importaciones/">Volver</a><a class="btn btn-primary" href="/importaciones/nueva/">Nueva importación</a></div>
+</section>
+
+<section class="card">
+  <header class="card-header"><h2 class="card-title">Errores de importación</h2></header>
+  {% if errores %}
+    <div class="table-responsive"><table class="table"><thead><tr><th>Fila</th><th>Campo</th><th>Error</th><th>Valor</th></tr></thead><tbody>
+    {% for e in errores %}<tr><td>{{ e.numero_fila }}</td><td>{{ e.campo|default:'—' }}</td><td>{{ e.error }}</td><td>{{ e.valor|default:'—' }}</td></tr>{% endfor %}
+    </tbody></table></div>
+  {% else %}
+    <div class="empty-state">Esta importación no tiene errores registrados.</div>
+  {% endif %}
+</section>
+{% endblock %}
