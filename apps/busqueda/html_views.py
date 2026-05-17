@@ -1,7 +1,7 @@
 from django.db.models import Case, IntegerField, Q, When
 from django.shortcuts import render
 
-from apps.catalogos.models import CategoriaPieza
+from apps.catalogos.models import CategoriaPieza, Marca
 from apps.inventario.models import Pieza
 from apps.yonkes.models import Yonke
 
@@ -113,6 +113,7 @@ def buscar_piezas(request):
             },
             "yonkes": Yonke.objects.all().order_by("nombre"),
             "categorias": CategoriaPieza.objects.filter(activo=True).order_by("nombre"),
+            "marcas": Marca.objects.filter(activo=True).order_by("nombre"),
             "condicion_choices": Pieza.CONDICION_CHOICES,
             "estatus_choices": Pieza.ESTATUS_CHOICES,
         },

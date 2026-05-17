@@ -92,7 +92,12 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="dashboard-marca">Marca</label>
-                        <input class="form-control" id="dashboard-marca" name="marca" type="text" placeholder="Ej. Nissan">
+                        <select class="form-select" id="dashboard-marca" name="marca">
+                            <option value="">Todas</option>
+                            {% for marca in marcas %}
+                                <option value="{{ marca.nombre }}">{{ marca.nombre }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="dashboard-modelo">Modelo</label>

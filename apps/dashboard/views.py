@@ -2,6 +2,7 @@ from django.db import OperationalError, ProgrammingError
 from django.db.models import Q
 from django.shortcuts import render
 
+from apps.catalogos.models import Marca
 from apps.inventario.models import Pieza, Vehiculo
 from apps.yonkes.models import Yonke
 
@@ -57,6 +58,7 @@ def index(request):
             },
             "ultimas_piezas": ultimas_piezas,
             "actividad_reciente": actividad_reciente,
+            "marcas": Marca.objects.filter(activo=True).order_by("nombre"),
         },
     )
 
