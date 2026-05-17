@@ -63,7 +63,7 @@ def yonke_create(request):
     form = YonkeForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         yonke = form.save()
-        return redirect("yonkes-detail", pk=yonke.pk)
+        return redirect("yonkes_html:yonkes-detail", pk=yonke.pk)
     return render(request, "yonkes/form.html", {"active_module": "yonkes", "form": form, "is_edit": False})
 
 
@@ -72,7 +72,7 @@ def yonke_edit(request, pk):
     form = YonkeForm(request.POST or None, instance=yonke)
     if request.method == "POST" and form.is_valid():
         yonke = form.save()
-        return redirect("yonkes-detail", pk=yonke.pk)
+        return redirect("yonkes_html:yonkes-detail", pk=yonke.pk)
     return render(
         request,
         "yonkes/form.html",

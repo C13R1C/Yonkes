@@ -1,10 +1,10 @@
 {% extends "layout/base.html" %}
 {% block title %}{{ pieza.nombre }} | Piezas{% endblock %}
-{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/piezas/">Piezas</a><span>/</span><span>Detalle</span>{% endblock %}
+{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="{% url 'inventario_html:piezas-list' %}">Piezas</a><span>/</span><span>Detalle</span>{% endblock %}
 {% block page_title %}<h1>{{ pieza.nombre }}</h1>{% endblock %}
 {% block content %}
 <section class="card section-stack">
-  <div class="card-header"><h2 class="card-title">Información general</h2><div class="inline-actions"><a class="btn btn-secondary" href="/piezas/">Volver</a><a class="btn btn-primary" href="/piezas/{{ pieza.id }}/editar/">Editar</a></div></div>
+  <div class="card-header"><h2 class="card-title">Información general</h2><div class="inline-actions"><a class="btn btn-secondary" href="{% url 'inventario_html:piezas-list' %}">Volver</a><a class="btn btn-primary" href="{% url 'inventario_html:piezas-edit' pieza.id %}">Editar</a></div></div>
   <div class="details-grid">
     <div><strong>Nombre:</strong> {{ pieza.nombre }}</div>
     <div><strong>Nombre normalizado:</strong> {{ pieza.nombre_normalizado.nombre_normalizado|default:'—' }}</div>

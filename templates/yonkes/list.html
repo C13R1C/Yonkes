@@ -14,7 +14,7 @@
 <section class="card section-stack">
   <div class="card-header">
     <h2 class="card-title">Filtros</h2>
-    <a href="/yonkes/nuevo/" class="btn btn-primary">Nuevo yonke</a>
+    <a href="{% url 'yonkes_html:yonkes-create' %}" class="btn btn-primary">Nuevo yonke</a>
   </div>
   <form method="get" class="form-grid">
     <div class="form-group"><label class="form-label">Nombre o razón social</label><input class="form-control" name="q" value="{{ filters.q }}"></div>
@@ -29,7 +29,7 @@
   <header class="card-header"><h2 class="card-title">Listado de yonkes</h2></header>
   {% if yonkes %}
   <div class="table-responsive"><table class="table"><thead><tr><th>Nombre</th><th>Razón social</th><th>Teléfono</th><th>WhatsApp</th><th>Email</th><th>Contacto principal</th><th>Estatus</th><th>Mostrar contacto</th><th>Fecha de creación</th><th>Acciones</th></tr></thead><tbody>
-  {% for y in yonkes %}<tr><td>{{ y.nombre }}</td><td>{{ y.razon_social|default:'—' }}</td><td>{{ y.telefono|default:'—' }}</td><td>{{ y.whatsapp|default:'—' }}</td><td>{{ y.email|default:'—' }}</td><td>{{ y.contacto_principal|default:'—' }}</td><td><span class="badge {% if y.estatus == 'activo' %}badge-success{% elif y.estatus == 'pendiente' %}badge-warning{% elif y.estatus == 'suspendido' or y.estatus == 'dado_de_baja' %}badge-danger{% else %}badge-muted{% endif %}">{{ y.get_estatus_display }}</span></td><td>{{ y.mostrar_contacto|yesno:"Sí,No" }}</td><td>{{ y.creado_en|date:"Y-m-d H:i" }}</td><td><div class="inline-actions"><a class="btn btn-secondary" href="/yonkes/{{ y.id }}/">Ver</a><a class="btn btn-secondary" href="/yonkes/{{ y.id }}/editar/">Editar</a></div></td></tr>{% endfor %}
+  {% for y in yonkes %}<tr><td>{{ y.nombre }}</td><td>{{ y.razon_social|default:'—' }}</td><td>{{ y.telefono|default:'—' }}</td><td>{{ y.whatsapp|default:'—' }}</td><td>{{ y.email|default:'—' }}</td><td>{{ y.contacto_principal|default:'—' }}</td><td><span class="badge {% if y.estatus == 'activo' %}badge-success{% elif y.estatus == 'pendiente' %}badge-warning{% elif y.estatus == 'suspendido' or y.estatus == 'dado_de_baja' %}badge-danger{% else %}badge-muted{% endif %}">{{ y.get_estatus_display }}</span></td><td>{{ y.mostrar_contacto|yesno:"Sí,No" }}</td><td>{{ y.creado_en|date:"Y-m-d H:i" }}</td><td><div class="inline-actions"><a class="btn btn-secondary" href="{% url 'yonkes_html:yonkes-detail' y.id %}">Ver</a><a class="btn btn-secondary" href="{% url 'yonkes_html:yonkes-edit' y.id %}">Editar</a></div></td></tr>{% endfor %}
   </tbody></table></div>
   {% else %}<div class="empty-state">No hay yonkes registrados con esos filtros.</div>{% endif %}
 </section>

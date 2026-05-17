@@ -1,10 +1,10 @@
 {% extends "layout/base.html" %}
 {% block title %}{{ yonke.nombre }} | Yonkes{% endblock %}
-{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/yonkes/">Yonkes</a><span>/</span><span>Detalle</span>{% endblock %}
+{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="{% url 'yonkes_html:yonkes-list' %}">Yonkes</a><span>/</span><span>Detalle</span>{% endblock %}
 {% block page_title %}<h1>{{ yonke.nombre }}</h1>{% endblock %}
 {% block content %}
 <section class="card section-stack">
-  <div class="card-header"><h2 class="card-title">Información general</h2><div class="inline-actions"><a class="btn btn-secondary" href="/yonkes/">Volver</a><a class="btn btn-primary" href="/yonkes/{{ yonke.id }}/editar/">Editar</a></div></div>
+  <div class="card-header"><h2 class="card-title">Información general</h2><div class="inline-actions"><a class="btn btn-secondary" href="{% url 'yonkes_html:yonkes-list' %}">Volver</a><a class="btn btn-primary" href="{% url 'yonkes_html:yonkes-edit' yonke.id %}">Editar</a></div></div>
   <div class="details-grid">
     <div><strong>Razón social:</strong> {{ yonke.razon_social|default:'—' }}</div>
     <div><strong>Estatus:</strong> {{ yonke.get_estatus_display }}</div>
