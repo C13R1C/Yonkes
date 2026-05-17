@@ -11,6 +11,7 @@ urlpatterns = [
     path("", include("apps.catalogos.html_urls")),
     path("", include("apps.importaciones.html_urls")),
     path("", include("apps.auditoria.html_urls")),
+    path("", include("apps.accounts.auth_urls")),
     path("", include("apps.accounts.html_urls")),
     path("", include("apps.dashboard.urls")),
     path("admin/", admin.site.urls),

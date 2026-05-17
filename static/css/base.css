@@ -831,3 +831,13 @@ svg {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.auth-card {
+  width: min(100%, 520px);
+}

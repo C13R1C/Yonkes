@@ -17,7 +17,7 @@
                 </svg>
             </button>
 
-            <a class="app-brand" href="#" aria-label="Red de Yonkes">
+            <a class="app-brand" href="/" aria-label="Red de Yonkes">
                 <span class="brand-mark" aria-hidden="true">
                     <svg viewBox="0 0 24 24">
                         <path d="M5 16.5h14l-1.3-5.2A3 3 0 0 0 14.8 9H9.2a3 3 0 0 0-2.9 2.3L5 16.5Z"></path>
@@ -52,18 +52,25 @@
             </button>
 
             <div class="user-menu" data-user-menu>
+                {% if request.user.is_authenticated %}
                 <button class="user-menu-trigger" type="button" aria-haspopup="true" aria-expanded="false">
-                    <span class="avatar" aria-hidden="true">A</span>
-                    <span class="user-name">Administrador</span>
+                    <span class="avatar" aria-hidden="true">{{ request.user.username|first|upper }}</span>
+                    <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="m6 9 6 6 6-6"></path>
                     </svg>
                 </button>
                 <div class="user-dropdown" role="menu">
-                    <a href="#" role="menuitem">Perfil</a>
-                    <a href="#" role="menuitem">Configuración</a>
-                    <a href="#" role="menuitem">Cerrar sesión</a>
+                    <a href="/perfil/" role="menuitem">Perfil</a>
+                    <a href="/configuracion/" role="menuitem">Configuración</a>
+                    <a href="/logout/" role="menuitem">Cerrar sesión</a>
                 </div>
+                {% else %}
+                <div class="inline-actions">
+                    <a class="btn btn-secondary" href="/login/">Login</a>
+                    <a class="btn btn-primary" href="/register/">Registro</a>
+                </div>
+                {% endif %}
             </div>
         </nav>
     </header>
