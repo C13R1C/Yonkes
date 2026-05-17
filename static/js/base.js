@@ -61,25 +61,20 @@
 
     if (searchForm) {
         searchForm.addEventListener("submit", function (event) {
-            event.preventDefault();
-
             const input = searchForm.querySelector("input[type='search']");
             const query = input ? input.value.trim() : "";
 
             if (!query) {
+                event.preventDefault();
                 if (input) {
                     input.focus();
                 }
-                showSearchFeedback("Ingresa un término para buscar.");
                 return;
             }
 
-            const searchEvent = new CustomEvent("global-search:submit", {
-                detail: { query: query },
-            });
-
-            window.dispatchEvent(searchEvent);
-            showSearchFeedback('Búsqueda preparada para "' + query + '".');
+            if (input) {
+                input.value = query;
+            }
         });
     }
 
