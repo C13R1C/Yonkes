@@ -108,7 +108,7 @@ def vehiculo_create(request):
     form = VehiculoForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         vehiculo = form.save()
-        return redirect("vehiculos-detail", pk=vehiculo.pk)
+        return redirect("inventario_html:vehiculos-detail", pk=vehiculo.pk)
     return render(request, "vehiculos/form.html", {"active_module": "vehiculos", "form": form, "is_edit": False})
 
 
@@ -117,7 +117,7 @@ def vehiculo_edit(request, pk):
     form = VehiculoForm(request.POST or None, instance=vehiculo)
     if request.method == "POST" and form.is_valid():
         vehiculo = form.save()
-        return redirect("vehiculos-detail", pk=vehiculo.pk)
+        return redirect("inventario_html:vehiculos-detail", pk=vehiculo.pk)
     return render(
         request,
         "vehiculos/form.html",
@@ -231,7 +231,7 @@ def pieza_create(request):
     form = PiezaForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         pieza = form.save()
-        return redirect("piezas-detail", pk=pieza.pk)
+        return redirect("inventario_html:piezas-detail", pk=pieza.pk)
     return render(request, "piezas/form.html", {"active_module": "piezas", "form": form, "is_edit": False})
 
 
@@ -240,7 +240,7 @@ def pieza_edit(request, pk):
     form = PiezaForm(request.POST or None, instance=pieza)
     if request.method == "POST" and form.is_valid():
         pieza = form.save()
-        return redirect("piezas-detail", pk=pieza.pk)
+        return redirect("inventario_html:piezas-detail", pk=pieza.pk)
     return render(
         request,
         "piezas/form.html",
