@@ -28,12 +28,12 @@
             </a>
         </div>
 
-        <form class="global-search" role="search" data-global-search>
+        <form class="global-search" role="search" data-global-search method="get" action="/busqueda/">
             <label class="sr-only" for="global-search-input">Buscar</label>
             <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"></path>
             </svg>
-            <input id="global-search-input" name="q" type="search" placeholder="Buscar piezas, vehículos o yonkes…" autocomplete="off">
+            <input id="global-search-input" name="pieza" type="search" placeholder="Buscar piezas, vehículos o yonkes…" value="{{ request.GET.pieza|default:'' }}" autocomplete="off">
         </form>
 
         <nav class="navbar-actions" aria-label="Acciones superiores">
