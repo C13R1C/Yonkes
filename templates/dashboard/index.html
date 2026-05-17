@@ -13,7 +13,122 @@
 {% endblock %}
 
 {% block content %}
-    <div class="card">
-        Layout base funcionando correctamente.
-    </div>
+    <section class="dashboard-grid">
+        <div class="dashboard-metrics">
+            <article class="card metric-card metric-card-teal">
+                <p class="metric-label">Yonkes activos</p>
+                <p class="metric-value">{{ metrics.yonkes_activos }}</p>
+            </article>
+            <article class="card metric-card metric-card-blue">
+                <p class="metric-label">Vehículos registrados</p>
+                <p class="metric-value">{{ metrics.vehiculos_registrados }}</p>
+            </article>
+            <article class="card metric-card metric-card-orange">
+                <p class="metric-label">Piezas disponibles</p>
+                <p class="metric-value">{{ metrics.piezas_disponibles }}</p>
+            </article>
+            <article class="card metric-card metric-card-muted">
+                <p class="metric-label">Búsquedas hoy</p>
+                <p class="metric-value">{{ metrics.busquedas_hoy }}</p>
+            </article>
+        </div>
+
+        <section class="card dashboard-main-panel">
+            <header class="card-header">
+                <h2 class="card-title">Últimas piezas registradas</h2>
+            </header>
+
+            {% if ultimas_piezas %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Pieza</th>
+                                <th>Yonke</th>
+                                <th>Estatus</th>
+                                <th>Precio</th>
+                                <th>Fecha registrada</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pieza in ultimas_piezas %}
+                                <tr>
+                                    <td>{{ pieza.nombre|default:"Sin nombre" }}</td>
+                                    <td>{{ pieza.yonke.nombre|default:"Sin yonke" }}</td>
+                                    <td>
+                                        <span class="badge {% if pieza.estatus == 'disponible' %}badge-success{% elif pieza.estatus == 'apartada' or pieza.estatus == 'pendiente_revision' %}badge-warning{% elif pieza.estatus == 'vendida' or pieza.estatus == 'danada' %}badge-danger{% else %}badge-muted{% endif %}">
+                                            {{ pieza.get_estatus_display|default:pieza.estatus|default:"Sin estatus" }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if pieza.precio %}
+                                            ${{ pieza.precio }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ pieza.creado_en|date:"Y-m-d H:i"|default:"—" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    No hay piezas registradas todavía.
+                </div>
+            {% endif %}
+        </section>
+
+        <aside class="dashboard-side-panels">
+            <section class="card">
+                <header class="card-header">
+                    <h2 class="card-title">Búsqueda rápida</h2>
+                </header>
+                <form class="form-grid" method="get" action="/busqueda/">
+                    <div class="form-group full-width">
+                        <label class="form-label" for="dashboard-pieza">Pieza</label>
+                        <input class="form-control" id="dashboard-pieza" name="pieza" type="text" placeholder="Ej. alternador">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="dashboard-marca">Marca</label>
+                        <select class="form-select" id="dashboard-marca" name="marca">
+                            <option value="">Todas</option>
+                            {% for marca in marcas %}
+                                <option value="{{ marca.nombre }}">{{ marca.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="dashboard-modelo">Modelo</label>
+                        <input class="form-control" id="dashboard-modelo" name="modelo" type="text" placeholder="Ej. Versa">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label" for="dashboard-anio">Año</label>
+                        <input class="form-control" id="dashboard-anio" name="anio" type="number" min="1900" max="2100" placeholder="Ej. 2018">
+                    </div>
+                    <div class="form-group full-width">
+                        <button class="btn btn-primary" type="submit">Buscar</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card">
+                <header class="card-header">
+                    <h2 class="card-title">Actividad reciente</h2>
+                </header>
+                <ul class="activity-list">
+                    {% for event in actividad_reciente %}
+                        <li class="activity-item">
+                            <span class="activity-dot" aria-hidden="true"></span>
+                            <div>
+                                <p class="activity-title">{{ event.title }}</p>
+                                <p class="activity-meta">{{ event.meta }}</p>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        </aside>
+    </section>
 {% endblock %}

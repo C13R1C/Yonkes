@@ -1,0 +1,11 @@
+{% extends "layout/base.html" %}
+{% block title %}{% if is_edit %}Editar usuario{% else %}Nuevo usuario{% endif %}{% endblock %}
+{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/usuarios/">Usuarios</a><span>/</span><span>{% if is_edit %}Editar{% else %}Nuevo{% endif %}</span>{% endblock %}
+{% block page_title %}<h1>{% if is_edit %}Editar usuario{% else %}Nuevo usuario{% endif %}</h1>{% endblock %}
+{% block content %}
+<section class="card section-stack"><form method="post" class="form-grid">{% csrf_token %}
+{% if form.non_field_errors %}<div class="form-errors full-width">{{ form.non_field_errors }}</div>{% endif %}
+{% for field in form %}<div class="form-group full-width"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endfor %}
+<div class="form-group full-width inline-actions"><a class="btn btn-secondary" href="{% if is_edit %}/usuarios/{{ user_obj.id }}/{% else %}/usuarios/{% endif %}">Cancelar</a><button class="btn btn-primary" type="submit">Guardar</button></div>
+</form></section>
+{% endblock %}

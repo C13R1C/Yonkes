@@ -1,0 +1,31 @@
+{% extends "layout/base.html" %}
+{% block title %}{{ pieza.nombre }} | Piezas{% endblock %}
+{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/piezas/">Piezas</a><span>/</span><span>Detalle</span>{% endblock %}
+{% block page_title %}<h1>{{ pieza.nombre }}</h1>{% endblock %}
+{% block content %}
+<section class="card section-stack">
+  <div class="card-header"><h2 class="card-title">Información general</h2><div class="inline-actions"><a class="btn btn-secondary" href="/piezas/">Volver</a><a class="btn btn-primary" href="/piezas/{{ pieza.id }}/editar/">Editar</a></div></div>
+  <div class="details-grid">
+    <div><strong>Nombre:</strong> {{ pieza.nombre }}</div>
+    <div><strong>Nombre normalizado:</strong> {{ pieza.nombre_normalizado.nombre_normalizado|default:'—' }}</div>
+    <div><strong>Alias local:</strong> {{ pieza.alias_local|default:'—' }}</div>
+    <div><strong>Yonke:</strong> {{ pieza.yonke.nombre }}</div>
+    <div><strong>Vehículo relacionado:</strong> {{ vehiculo_label }}</div>
+    <div><strong>Categoría:</strong> {{ pieza.categoria.nombre|default:'—' }}</div>
+    <div><strong>Marca compatible:</strong> {{ pieza.marca_compatible.nombre|default:pieza.marca_texto|default:'—' }}</div>
+    <div><strong>Modelo compatible:</strong> {{ pieza.modelo_compatible.nombre|default:pieza.modelo_texto|default:'—' }}</div>
+    <div><strong>Año inicial:</strong> {{ pieza.anio_inicio|default:'—' }}</div>
+    <div><strong>Año final:</strong> {{ pieza.anio_fin|default:'—' }}</div>
+    <div><strong>Condición:</strong> {{ pieza.get_condicion_display }}</div>
+    <div><strong>Estatus:</strong> {{ pieza.get_estatus_display }}</div>
+    <div><strong>Visibilidad:</strong> {{ pieza.get_visibilidad_display }}</div>
+    <div><strong>Precio:</strong> {% if pieza.precio %}${{ pieza.precio }}{% else %}—{% endif %}</div>
+    <div><strong>Precio visible:</strong> {{ pieza.precio_visible|yesno:"Sí,No" }}</div>
+    <div><strong>Cantidad:</strong> {{ pieza.cantidad }}</div>
+    <div><strong>Ubicación:</strong> {{ pieza.ubicacion|default:'—' }}</div>
+    <div class="full-width"><strong>Observaciones:</strong> {{ pieza.observaciones|default:'—' }}</div>
+    <div><strong>Creado:</strong> {{ pieza.creado_en|date:"Y-m-d H:i" }}</div>
+    <div><strong>Actualizado:</strong> {{ pieza.actualizado_en|date:"Y-m-d H:i" }}</div>
+  </div>
+</section>
+{% endblock %}
