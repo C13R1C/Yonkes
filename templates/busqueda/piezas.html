@@ -1,0 +1,54 @@
+{% extends "layout/base.html" %}
+{% block title %}Buscar piezas | Red de Yonkes{% endblock %}
+{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><span>Búsqueda</span>{% endblock %}
+{% block page_title %}<h1>Buscar piezas</h1>{% endblock %}
+{% block content %}
+<section class="card section-stack">
+  <header class="card-header"><h2 class="card-title">Filtros de búsqueda</h2></header>
+  <form method="get" class="form-grid">
+    <div class="form-group"><label class="form-label">Pieza</label><input class="form-control" name="pieza" value="{{ filters.pieza }}"></div>
+    <div class="form-group"><label class="form-label">Marca</label><input class="form-control" name="marca" value="{{ filters.marca }}"></div>
+    <div class="form-group"><label class="form-label">Modelo</label><input class="form-control" name="modelo" value="{{ filters.modelo }}"></div>
+    <div class="form-group"><label class="form-label">Año</label><input class="form-control" name="anio" type="number" value="{{ filters.anio }}"></div>
+    <div class="form-group"><label class="form-label">Categoría</label><select class="form-select" name="categoria"><option value="">Todas</option>{% for c in categorias %}<option value="{{ c.nombre }}" {% if filters.categoria == c.nombre %}selected{% endif %}>{{ c.nombre }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label class="form-label">Yonke</label><select class="form-select" name="yonke"><option value="">Todos</option>{% for y in yonkes %}<option value="{{ y.nombre }}" {% if filters.yonke == y.nombre %}selected{% endif %}>{{ y.nombre }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label class="form-label">Condición</label><select class="form-select" name="condicion"><option value="">Todas</option>{% for value,label in condicion_choices %}<option value="{{ value }}" {% if filters.condicion == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label class="form-label">Estatus</label><select class="form-select" name="estatus"><option value="">Todos</option>{% for value,label in estatus_choices %}<option value="{{ value }}" {% if filters.estatus == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="form-group full-width"><label><input class="form-checkbox" type="checkbox" name="solo_disponibles" {% if filters.solo_disponibles %}checked{% endif %}> Solo disponibles</label></div>
+    <div class="form-group full-width inline-actions"><button class="btn btn-primary" type="submit">Buscar</button><a class="btn btn-secondary" href="/busqueda/">Limpiar filtros</a></div>
+  </form>
+</section>
+
+<section class="card">
+  <header class="card-header"><h2 class="card-title">Resultados</h2></header>
+  {% if resultados %}
+    <div class="results-grid">
+      {% for pieza in resultados %}
+      <article class="card result-card">
+        <div class="card-header"><h3 class="card-title">{{ pieza.nombre }}</h3><a class="btn btn-secondary" href="/piezas/{{ pieza.id }}/">Ver detalle</a></div>
+        <div class="details-grid">
+          <div><strong>Alias local:</strong> {{ pieza.alias_local|default:'—' }}</div>
+          <div><strong>Categoría:</strong> {{ pieza.categoria.nombre|default:'—' }}</div>
+          <div><strong>Condición:</strong> <span class="badge badge-info">{{ pieza.get_condicion_display }}</span></div>
+          <div><strong>Estatus:</strong> <span class="badge badge-success">{{ pieza.get_estatus_display }}</span></div>
+          <div><strong>Cantidad:</strong> {{ pieza.cantidad }}</div>
+          <div><strong>Yonke:</strong> {{ pieza.yonke.nombre }}</div>
+          <div><strong>Vehículo:</strong> {% if pieza.vehiculo %}{{ pieza.vehiculo }}{% else %}—{% endif %}</div>
+          <div><strong>Compatible:</strong> {{ pieza.marca_compatible.nombre|default:pieza.marca_texto|default:'—' }} {{ pieza.modelo_compatible.nombre|default:pieza.modelo_texto|default:'' }} {% if pieza.anio_inicio or pieza.anio_fin %}({{ pieza.anio_inicio|default:'?' }}-{{ pieza.anio_fin|default:'?' }}){% endif %}</div>
+          <div><strong>Precio:</strong> {% if pieza.precio_visible %}${{ pieza.precio|default:'0.00' }}{% else %}<span class="badge badge-muted">Precio no visible</span>{% endif %}</div>
+          <div class="full-width"><strong>Contacto:</strong>
+            {% if pieza.yonke.mostrar_contacto %}
+              Tel: {{ pieza.yonke.telefono|default:'—' }} | WhatsApp: {{ pieza.yonke.whatsapp|default:'—' }}
+            {% else %}
+              <span class="badge badge-muted">Contacto no público</span>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">{% if hay_filtros %}No se encontraron piezas con esos filtros.{% else %}Ingresa filtros para buscar piezas.{% endif %}</div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "layout/base.html" %}
+{% block title %}Registro de auditoría #{{ log.id }}{% endblock %}
+{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/auditoria/">Auditoría</a><span>/</span><span>Detalle</span>{% endblock %}
+{% block page_title %}<h1>Registro de auditoría #{{ log.id }}</h1>{% endblock %}
+{% block content %}
+<section class="card section-stack">
+  <div class="details-grid">
+    <div><strong>Fecha:</strong> {{ log.creado_en|date:"Y-m-d H:i" }}</div>
+    <div><strong>Usuario:</strong> {% if log.usuario %}{{ log.usuario.username }}{% else %}Sin datos{% endif %}</div>
+    <div><strong>Yonke:</strong> {% if log.yonke %}{{ log.yonke.nombre }}{% else %}Sin datos{% endif %}</div>
+    <div><strong>Acción:</strong> {{ log.accion|default:"Sin datos" }}</div>
+    <div><strong>Entidad:</strong> {{ log.entidad|default:"Sin datos" }}</div>
+    <div><strong>ID entidad:</strong> {{ log.entidad_id|default:"Sin datos" }}</div>
+    <div><strong>IP:</strong> {{ log.ip_address|default:"Sin datos" }}</div>
+    <div class="full-width"><strong>User agent:</strong> {{ log.user_agent|default:"Sin datos" }}</div>
+    <div class="full-width"><strong>Cambios JSON:</strong><pre class="json-block">{{ log.cambios|default:"{}" }}</pre></div>
+  </div>
+  <div class="inline-actions"><a class="btn btn-secondary" href="/auditoria/">Volver</a></div>
+</section>
+{% endblock %}
