@@ -26,13 +26,15 @@
       {% for pieza in resultados %}
       <article class="card result-card">
         <div class="card-header"><h3 class="card-title">{{ pieza.nombre }}</h3><a class="btn btn-secondary" href="/piezas/{{ pieza.id }}/">Ver detalle</a></div>
+        <div>{% if pieza.imagen_principal %}<img class="media-thumb" src="{{ pieza.imagen_principal.url }}" alt="{{ pieza.nombre }}">{% elif pieza.vehiculo and pieza.vehiculo.imagen_principal %}<img class="media-thumb" src="{{ pieza.vehiculo.imagen_principal.url }}" alt="{{ pieza.vehiculo }}">{% else %}<span class="media-thumb media-placeholder">Sin imagen</span>{% endif %}</div>
+        {% if pieza.marca_compatible.logo %}<div><img class="brand-logo" src="{{ pieza.marca_compatible.logo.url }}" alt="{{ pieza.marca_compatible.nombre }}"></div>{% endif %}
         <div class="details-grid">
           <div><strong>Alias local:</strong> {{ pieza.alias_local|default:'—' }}</div>
           <div><strong>Categoría:</strong> {{ pieza.categoria.nombre|default:'—' }}</div>
           <div><strong>Condición:</strong> <span class="badge badge-info">{{ pieza.get_condicion_display }}</span></div>
           <div><strong>Estatus:</strong> <span class="badge badge-success">{{ pieza.get_estatus_display }}</span></div>
           <div><strong>Cantidad:</strong> {{ pieza.cantidad }}</div>
-          <div><strong>Yonke:</strong> {{ pieza.yonke.nombre }}</div>
+          <div><strong>Yonke propietario:</strong> {{ pieza.yonke.nombre }}</div>
           <div><strong>Vehículo:</strong> {% if pieza.vehiculo %}{{ pieza.vehiculo }}{% else %}—{% endif %}</div>
           <div><strong>Compatible:</strong> {{ pieza.marca_compatible.nombre|default:pieza.marca_texto|default:'—' }} {{ pieza.modelo_compatible.nombre|default:pieza.modelo_texto|default:'' }} {% if pieza.anio_inicio or pieza.anio_fin %}({{ pieza.anio_inicio|default:'?' }}-{{ pieza.anio_fin|default:'?' }}){% endif %}</div>
           <div><strong>Precio:</strong> {% if pieza.precio_visible %}${{ pieza.precio|default:'0.00' }}{% else %}<span class="badge badge-muted">Precio no visible</span>{% endif %}</div>

@@ -2,12 +2,15 @@
 
 
 class Marca(models.Model):
-    nombre = models.CharField(max_length=100, unique=True)
+    yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="marcas_catalogo")
+    nombre = models.CharField(max_length=100)
+    logo = models.ImageField(upload_to="marcas/", blank=True)
     activo = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = "Marca"
         verbose_name_plural = "Marcas"
+        unique_together = ["yonke", "nombre"]
         ordering = ["nombre"]
 
     def __str__(self):
@@ -15,14 +18,15 @@ class Marca(models.Model):
 
 
 class ModeloVehiculo(models.Model):
+    yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="modelos_catalogo")
     marca = models.ForeignKey(Marca, on_delete=models.CASCADE, related_name="modelos")
     nombre = models.CharField(max_length=100)
     activo = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = "Modelo de vehiculo"
-        verbose_name_plural = "Modelos de vehiculo"
-        unique_together = ["marca", "nombre"]
+        verbose_name = "Modelo de vehículo"
+        verbose_name_plural = "Modelos de vehículo"
+        unique_together = ["yonke", "marca", "nombre"]
         ordering = ["marca__nombre", "nombre"]
 
     def __str__(self):
@@ -30,12 +34,14 @@ class ModeloVehiculo(models.Model):
 
 
 class CategoriaPieza(models.Model):
-    nombre = models.CharField(max_length=100, unique=True)
+    yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="categorias_catalogo")
+    nombre = models.CharField(max_length=100)
     activo = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = "Categoria de pieza"
-        verbose_name_plural = "Categorias de piezas"
+        verbose_name = "Categoría de pieza"
+        verbose_name_plural = "Categorías de piezas"
+        unique_together = ["yonke", "nombre"]
         ordering = ["nombre"]
 
     def __str__(self):
@@ -43,6 +49,7 @@ class CategoriaPieza(models.Model):
 
 
 class NombrePieza(models.Model):
+    yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="nombres_piezas")
     nombre_normalizado = models.CharField(max_length=150)
     categoria = models.ForeignKey(CategoriaPieza, on_delete=models.SET_NULL, null=True, blank=True)
     activo = models.BooleanField(default=True)
@@ -57,13 +64,14 @@ class NombrePieza(models.Model):
 
 
 class AliasPieza(models.Model):
+    yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="alias_piezas")
     nombre_pieza = models.ForeignKey(NombrePieza, on_delete=models.CASCADE, related_name="alias")
     alias = models.CharField(max_length=150)
 
     class Meta:
         verbose_name = "Alias de pieza"
         verbose_name_plural = "Alias de piezas"
-        unique_together = ["nombre_pieza", "alias"]
+        unique_together = ["yonke", "nombre_pieza", "alias"]
 
     def __str__(self):
         return f"{self.alias} -> {self.nombre_pieza}"

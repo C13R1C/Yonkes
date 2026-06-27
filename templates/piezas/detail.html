@@ -4,26 +4,29 @@
 {% block page_title %}<h1>{{ pieza.nombre }}</h1>{% endblock %}
 {% block content %}
 <section class="card section-stack">
-  <div class="card-header"><h2 class="card-title">Información general</h2><div class="inline-actions"><a class="btn btn-secondary" href="{% url 'inventario_html:piezas-list' %}">Volver</a><a class="btn btn-primary" href="{% url 'inventario_html:piezas-edit' pieza.id %}">Editar</a></div></div>
+  <div class="card-header"><h2 class="card-title">Información general</h2><div class="inline-actions"><a class="btn btn-secondary" href="{% url 'inventario_html:piezas-list' %}">Regresar</a>{% if can_edit %}<a class="btn btn-primary" href="{% url 'inventario_html:piezas-edit' pieza.id %}">Editar</a>{% endif %}</div></div>
+  <div class="full-width">{% if pieza.imagen_principal %}<img class="media-detail" src="{{ pieza.imagen_principal.url }}" alt="{{ pieza.nombre }}">{% elif pieza.vehiculo and pieza.vehiculo.imagen_principal %}<img class="media-detail" src="{{ pieza.vehiculo.imagen_principal.url }}" alt="{{ pieza.vehiculo }}">{% else %}<span class="media-detail media-placeholder">Sin imagen</span>{% endif %}</div>
   <div class="details-grid">
     <div><strong>Nombre:</strong> {{ pieza.nombre }}</div>
-    <div><strong>Nombre normalizado:</strong> {{ pieza.nombre_normalizado.nombre_normalizado|default:'—' }}</div>
-    <div><strong>Alias local:</strong> {{ pieza.alias_local|default:'—' }}</div>
+    <div><strong>Nombre normalizado:</strong> {{ pieza.nombre_normalizado.nombre_normalizado|default:'-' }}</div>
+    <div><strong>Alias local:</strong> {{ pieza.alias_local|default:'-' }}</div>
     <div><strong>Yonke:</strong> {{ pieza.yonke.nombre }}</div>
     <div><strong>Vehículo relacionado:</strong> {{ vehiculo_label }}</div>
-    <div><strong>Categoría:</strong> {{ pieza.categoria.nombre|default:'—' }}</div>
-    <div><strong>Marca compatible:</strong> {{ pieza.marca_compatible.nombre|default:pieza.marca_texto|default:'—' }}</div>
-    <div><strong>Modelo compatible:</strong> {{ pieza.modelo_compatible.nombre|default:pieza.modelo_texto|default:'—' }}</div>
-    <div><strong>Año inicial:</strong> {{ pieza.anio_inicio|default:'—' }}</div>
-    <div><strong>Año final:</strong> {{ pieza.anio_fin|default:'—' }}</div>
+    <div><strong>Categoría:</strong> {{ pieza.categoria.nombre|default:'-' }}</div>
+    <div><strong>Marca compatible:</strong> <span class="media-cell">{% if pieza.marca_compatible.logo %}<img class="brand-logo" src="{{ pieza.marca_compatible.logo.url }}" alt="{{ pieza.marca_compatible.nombre }}">{% endif %}{{ pieza.marca_compatible.nombre|default:pieza.marca_texto|default:'-' }}</span></div>
+    <div><strong>Modelo compatible:</strong> {{ pieza.modelo_compatible.nombre|default:pieza.modelo_texto|default:'-' }}</div>
+    <div><strong>Año inicial:</strong> {{ pieza.anio_inicio|default:'-' }}</div>
+    <div><strong>Año final:</strong> {{ pieza.anio_fin|default:'-' }}</div>
     <div><strong>Condición:</strong> {{ pieza.get_condicion_display }}</div>
     <div><strong>Estatus:</strong> {{ pieza.get_estatus_display }}</div>
     <div><strong>Visibilidad:</strong> {{ pieza.get_visibilidad_display }}</div>
-    <div><strong>Precio:</strong> {% if pieza.precio %}${{ pieza.precio }}{% else %}—{% endif %}</div>
+    <div><strong>Precio:</strong> {% if can_view_sensitive or pieza.precio_visible %}{% if pieza.precio %}${{ pieza.precio }}{% else %}-{% endif %}{% else %}<span class="badge badge-muted">Precio no visible</span>{% endif %}</div>
     <div><strong>Precio visible:</strong> {{ pieza.precio_visible|yesno:"Sí,No" }}</div>
     <div><strong>Cantidad:</strong> {{ pieza.cantidad }}</div>
-    <div><strong>Ubicación:</strong> {{ pieza.ubicacion|default:'—' }}</div>
-    <div class="full-width"><strong>Observaciones:</strong> {{ pieza.observaciones|default:'—' }}</div>
+    {% if can_view_sensitive %}
+    <div><strong>Ubicación:</strong> {{ pieza.ubicacion|default:'-' }}</div>
+    <div class="full-width"><strong>Observaciones:</strong> {{ pieza.observaciones|default:'-' }}</div>
+    {% endif %}
     <div><strong>Creado:</strong> {{ pieza.creado_en|date:"Y-m-d H:i" }}</div>
     <div><strong>Actualizado:</strong> {{ pieza.actualizado_en|date:"Y-m-d H:i" }}</div>
   </div>

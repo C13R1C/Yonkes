@@ -16,8 +16,8 @@ urlpatterns = [
     path("", include("apps.dashboard.urls")),
     path("admin/", admin.site.urls),
 
-    path("api/", include("apps.yonkes.urls")),
-    path("api/", include("apps.inventario.urls")),
+    path("api/", include(("apps.yonkes.urls", "yonkes_api"), namespace="yonkes_api")),
+    path("api/", include(("apps.inventario.urls", "inventario_api"), namespace="inventario_api")),
     path("api/catalogos/", include("apps.catalogos.urls")),
     path("api/busqueda/", include("apps.busqueda.urls")),
 ]

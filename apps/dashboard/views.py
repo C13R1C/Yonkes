@@ -1,7 +1,9 @@
+from django.contrib.auth.decorators import login_required
 from django.db import OperationalError, ProgrammingError
 from django.db.models import Q
 from django.shortcuts import render
 
+from apps.accounts.permissions import can_view_sensitive_inventory, inventory_queryset_for_user, is_admin_general, user_yonke
 from apps.catalogos.models import Marca
 from apps.inventario.models import Pieza, Vehiculo
 from apps.yonkes.models import Yonke
@@ -14,29 +16,44 @@ def _safe_count(queryset, fallback=0):
         return fallback
 
 
-def _safe_piezas():
+def _safe_piezas(user):
     try:
-        return list(
-            Pieza.objects.select_related("yonke")
-            .only("id", "nombre", "estatus", "precio", "creado_en", "yonke__nombre")
+        piezas = list(
+            inventory_queryset_for_user(Pieza.objects.select_related("yonke", "vehiculo"), user)
+            .only(
+                "id",
+                "nombre",
+                "estatus",
+                "precio",
+                "precio_visible",
+                "imagen_principal",
+                "creado_en",
+                "yonke__nombre",
+                "vehiculo__imagen_principal",
+            )
             .order_by("-creado_en", "-id")[:5]
         )
+        for pieza in piezas:
+            pieza.can_view_sensitive = can_view_sensitive_inventory(user, pieza)
+        return piezas
     except (OperationalError, ProgrammingError):
         return []
 
 
+@login_required(login_url="/login/")
 def index(request):
     # TODO: Reemplazar por métrica real cuando exista tracking de búsquedas.
     busquedas_hoy = 0
 
-    yonkes_activos = _safe_count(Yonke.objects.filter(estatus="activo"))
+    yonkes_base = Yonke.objects.all() if is_admin_general(request.user) else Yonke.objects.filter(pk=getattr(user_yonke(request.user), "pk", None))
+    yonkes_activos = _safe_count(yonkes_base.filter(estatus="activo"))
     if yonkes_activos == 0:
-        yonkes_activos = _safe_count(Yonke.objects.all())
+        yonkes_activos = _safe_count(yonkes_base)
 
-    vehiculos_registrados = _safe_count(Vehiculo.objects.all())
-    piezas_disponibles = _safe_count(Pieza.objects.filter(Q(estatus="disponible") & Q(cantidad__gt=0)))
+    vehiculos_registrados = _safe_count(inventory_queryset_for_user(Vehiculo.objects.all(), request.user))
+    piezas_disponibles = _safe_count(inventory_queryset_for_user(Pieza.objects.filter(Q(estatus="disponible") & Q(cantidad__gt=0)), request.user))
 
-    ultimas_piezas = _safe_piezas()
+    ultimas_piezas = _safe_piezas(request.user)
 
     actividad_reciente = [
         {"title": "Nueva pieza registrada", "meta": "Hace 5 minutos"},

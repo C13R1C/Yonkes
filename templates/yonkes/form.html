@@ -13,7 +13,7 @@
       {% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}
     </div>
     {% endfor %}
-    <div class="form-group full-width inline-actions"><a class="btn btn-secondary" href="{% if is_edit %}{% url 'yonkes_html:yonkes-detail' yonke.id %}{% else %}{% url 'yonkes_html:yonkes-list' %}{% endif %}">Cancelar</a><button class="btn btn-primary" type="submit">Guardar</button></div>
+    <div class="form-group full-width inline-actions"><a class="btn btn-secondary" href="{% if is_edit %}{% url 'yonkes_html:yonkes-detail' yonke.id %}{% else %}{% url 'yonkes_html:yonkes-list' %}{% endif %}">Regresar</a><button class="btn btn-primary" type="submit">Guardar</button></div>
   </form>
 </section>
 {% endblock %}

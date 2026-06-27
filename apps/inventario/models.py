@@ -30,6 +30,7 @@ class Vehiculo(models.Model):
 
     marca_texto = models.CharField(max_length=100, blank=True)
     modelo_texto = models.CharField(max_length=100, blank=True)
+    imagen_principal = models.ImageField(upload_to="vehiculos/principales/", blank=True)
     anio = models.PositiveIntegerField(null=True, blank=True)
     version = models.CharField(max_length=100, blank=True)
     motor = models.CharField(max_length=100, blank=True)
@@ -53,8 +54,8 @@ class Vehiculo(models.Model):
     actualizado_en = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Vehiculo"
-        verbose_name_plural = "Vehiculos"
+        verbose_name = "Vehículo"
+        verbose_name_plural = "Vehículos"
         ordering = ["-actualizado_en"]
 
     def __str__(self):
@@ -104,6 +105,7 @@ class Pieza(models.Model):
 
     marca_texto = models.CharField(max_length=100, blank=True)
     modelo_texto = models.CharField(max_length=100, blank=True)
+    imagen_principal = models.ImageField(upload_to="piezas/principales/", blank=True)
     anio_inicio = models.PositiveIntegerField(null=True, blank=True)
     anio_fin = models.PositiveIntegerField(null=True, blank=True)
 
@@ -147,12 +149,12 @@ class VehiculoImagen(models.Model):
     creado_en = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Imagen de vehiculo"
-        verbose_name_plural = "Imagenes de vehiculos"
+        verbose_name = "Imagen de vehículo"
+        verbose_name_plural = "Imágenes de vehículos"
         ordering = ["orden", "creado_en"]
 
     def __str__(self):
-        return f"Imagen vehiculo {self.vehiculo_id}"
+        return f"Imagen vehículo {self.vehiculo_id}"
 
 
 class PiezaImagen(models.Model):
@@ -163,7 +165,7 @@ class PiezaImagen(models.Model):
 
     class Meta:
         verbose_name = "Imagen de pieza"
-        verbose_name_plural = "Imagenes de piezas"
+        verbose_name_plural = "Imágenes de piezas"
         ordering = ["orden", "creado_en"]
 
     def __str__(self):

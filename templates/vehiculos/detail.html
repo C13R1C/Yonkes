@@ -4,25 +4,37 @@
 {% block page_title %}<h1>{{ vehiculo_label }}</h1>{% endblock %}
 {% block content %}
 <section class="card section-stack">
-  <div class="card-header"><h2 class="card-title">Información general</h2><div class="inline-actions"><a class="btn btn-secondary" href="{% url 'inventario_html:vehiculos-list' %}">Volver</a><a class="btn btn-primary" href="{% url 'inventario_html:vehiculos-edit' vehiculo.id %}">Editar</a></div></div>
+  <div class="card-header"><h2 class="card-title">Información general</h2><div class="inline-actions"><a class="btn btn-secondary" href="{% url 'inventario_html:vehiculos-list' %}">Regresar</a>{% if can_add_piece %}<a class="btn btn-secondary" href="{% url 'inventario_html:piezas-create' %}?vehiculo={{ vehiculo.id }}">Agregar pieza a este vehículo</a>{% endif %}{% if can_edit %}<a class="btn btn-primary" href="{% url 'inventario_html:vehiculos-edit' vehiculo.id %}">Editar</a>{% endif %}</div></div>
+  <div class="full-width">{% if vehiculo.imagen_principal %}<img class="media-detail" src="{{ vehiculo.imagen_principal.url }}" alt="{{ vehiculo_label }}">{% else %}<span class="media-detail media-placeholder">Sin imagen</span>{% endif %}</div>
   <div class="details-grid">
     <div><strong>Yonke:</strong> {{ vehiculo.yonke.nombre }}</div>
-    <div><strong>Marca:</strong> {{ vehiculo.marca.nombre|default:vehiculo.marca_texto|default:'—' }}</div>
-    <div><strong>Modelo:</strong> {{ vehiculo.modelo.nombre|default:vehiculo.modelo_texto|default:'—' }}</div>
-    <div><strong>Año:</strong> {{ vehiculo.anio|default:'—' }}</div>
-    <div><strong>Versión:</strong> {{ vehiculo.version|default:'—' }}</div>
-    <div><strong>Motor:</strong> {{ vehiculo.motor|default:'—' }}</div>
-    <div><strong>Transmisión:</strong> {{ vehiculo.transmision|default:'—' }}</div>
-    <div><strong>VIN:</strong> {{ vehiculo.vin|default:'—' }}</div>
-    <div><strong>Número de serie:</strong> {{ vehiculo.numero_serie|default:'—' }}</div>
-    <div><strong>Ubicación:</strong> {{ vehiculo.ubicacion_fisica|default:'—' }}</div>
+    <div><strong>Marca:</strong> <span class="media-cell">{% if vehiculo.marca.logo %}<img class="brand-logo" src="{{ vehiculo.marca.logo.url }}" alt="{{ vehiculo.marca.nombre }}">{% endif %}{{ vehiculo.marca.nombre|default:vehiculo.marca_texto|default:'-' }}</span></div>
+    <div><strong>Modelo:</strong> {{ vehiculo.modelo.nombre|default:vehiculo.modelo_texto|default:'-' }}</div>
+    <div><strong>Año:</strong> {{ vehiculo.anio|default:'-' }}</div>
+    <div><strong>Versión:</strong> {{ vehiculo.version|default:'-' }}</div>
+    <div><strong>Motor:</strong> {{ vehiculo.motor|default:'-' }}</div>
+    <div><strong>Transmisión:</strong> {{ vehiculo.transmision|default:'-' }}</div>
+    {% if can_view_sensitive %}
+    <div><strong>VIN:</strong> {{ vehiculo.vin|default:'-' }}</div>
+    <div><strong>Número de serie:</strong> {{ vehiculo.numero_serie|default:'-' }}</div>
+    <div><strong>Ubicación:</strong> {{ vehiculo.ubicacion_fisica|default:'-' }}</div>
+    {% endif %}
     <div><strong>Estatus:</strong> {{ vehiculo.get_estatus_display }}</div>
     <div><strong>Visibilidad:</strong> {{ vehiculo.get_visibilidad_display }}</div>
-    <div class="full-width"><strong>Observaciones:</strong> {{ vehiculo.observaciones|default:'—' }}</div>
-    <div class="full-width"><strong>Datos legales internos:</strong> {{ vehiculo.datos_legales_internos|default:'—' }}</div>
+    {% if can_view_sensitive %}
+    <div class="full-width"><strong>Observaciones:</strong> {{ vehiculo.observaciones|default:'-' }}</div>
+    <div class="full-width"><strong>Datos legales internos:</strong> {{ vehiculo.datos_legales_internos|default:'-' }}</div>
+    {% endif %}
     <div><strong>Creado:</strong> {{ vehiculo.creado_en|date:"Y-m-d H:i" }}</div>
     <div><strong>Actualizado:</strong> {{ vehiculo.actualizado_en|date:"Y-m-d H:i" }}</div>
   </div>
 </section>
-<section class="card"><header class="card-header"><h2 class="card-title">Resumen relacionado</h2></header><div><strong>Piezas relacionadas:</strong> {{ piezas_count|default:'—' }}</div></section>
+<section class="card">
+  <header class="card-header"><h2 class="card-title">Piezas asociadas</h2>{% if can_add_piece %}<a class="btn btn-primary" href="{% url 'inventario_html:piezas-create' %}?vehiculo={{ vehiculo.id }}">Agregar pieza a este vehículo</a>{% endif %}</header>
+  {% if piezas %}
+  <div class="table-responsive"><table class="table"><thead><tr><th>Nombre</th><th>Categoría</th><th>Estatus</th><th>Visibilidad</th><th>Cantidad</th><th>Precio</th><th>Acciones</th></tr></thead><tbody>
+  {% for pieza in piezas %}<tr><td><span class="media-cell">{% if pieza.imagen_principal %}<img class="media-thumb" src="{{ pieza.imagen_principal.url }}" alt="{{ pieza.nombre }}">{% else %}<span class="media-thumb media-placeholder">Sin imagen</span>{% endif %}{{ pieza.nombre }}</span></td><td>{{ pieza.categoria.nombre|default:'-' }}</td><td>{{ pieza.get_estatus_display }}</td><td>{{ pieza.get_visibilidad_display }}</td><td>{{ pieza.cantidad }}</td><td>{% if pieza.can_view_sensitive or pieza.precio_visible %}{% if pieza.precio %}${{ pieza.precio }}{% else %}-{% endif %}{% else %}<span class="badge badge-muted">Precio no visible</span>{% endif %}</td><td><div class="inline-actions"><a class="btn btn-secondary" href="{% url 'inventario_html:piezas-detail' pieza.id %}">Ver</a>{% if pieza.can_edit %}<a class="btn btn-secondary" href="{% url 'inventario_html:piezas-edit' pieza.id %}">Editar</a>{% endif %}</div></td></tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}<div class="empty-state">Este vehículo todavía no tiene piezas asociadas.</div>{% endif %}
+</section>
 {% endblock %}

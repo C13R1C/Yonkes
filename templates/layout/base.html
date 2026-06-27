@@ -33,7 +33,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"></path>
             </svg>
-            <input id="global-search-input" name="pieza" type="search" placeholder="Buscar piezas, vehículos o yonkes…" value="{{ request.GET.pieza|default:'' }}" autocomplete="off">
+            <input id="global-search-input" name="pieza" type="search" placeholder="Buscar piezas, vehículos o yonkes..." value="{{ request.GET.pieza|default:'' }}" autocomplete="off">
         </form>
 
         <nav class="navbar-actions" aria-label="Acciones superiores">
@@ -67,7 +67,7 @@
                 </div>
                 {% else %}
                 <div class="inline-actions">
-                    <a class="btn btn-secondary" href="/login/">Login</a>
+                    <a class="btn btn-secondary" href="/login/">Iniciar sesión</a>
                     <a class="btn btn-primary" href="/register/">Registro</a>
                 </div>
                 {% endif %}
@@ -77,7 +77,7 @@
 
     <div class="sidebar-backdrop" data-sidebar-backdrop></div>
 
-    <aside class="app-sidebar" id="app-sidebar" aria-label="Navegacion principal">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Navegación principal">
         <nav class="sidebar-nav">
             <a class="sidebar-link {% if active_module == 'dashboard' %}is-active{% endif %}" href="/" data-module="dashboard">
                 <span class="sidebar-icon" aria-hidden="true">
@@ -109,30 +109,38 @@
                 </span>
                 Búsqueda
             </a>
+            {% if perm_can_access_catalogs %}
             <a class="sidebar-link {% if active_module == 'catalogos' %}is-active{% endif %}" href="/catalogos/" data-module="catalogos">
                 <span class="sidebar-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16M8 5v14"></path></svg>
                 </span>
                 Catálogos
             </a>
+            {% endif %}
+            {% if perm_can_create_inventory %}
             <a class="sidebar-link {% if active_module == 'importaciones' %}is-active{% endif %}" href="/importaciones/" data-module="importaciones">
                 <span class="sidebar-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4M5 21h14"></path></svg>
                 </span>
                 Importaciones
             </a>
+            {% endif %}
+            {% if perm_can_access_admin_area %}
             <a class="sidebar-link {% if active_module == 'auditoria' %}is-active{% endif %}" href="/auditoria/" data-module="auditoria">
                 <span class="sidebar-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24"><path d="M9 11h6M9 15h6M7 3h10v18H7zM5 7h2M17 7h2"></path></svg>
                 </span>
                 Auditoría
             </a>
+            {% endif %}
+            {% if perm_can_manage_users %}
             <a class="sidebar-link {% if active_module == 'usuarios' %}is-active{% endif %}" href="/usuarios/" data-module="usuarios">
                 <span class="sidebar-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"></path></svg>
                 </span>
                 Usuarios
             </a>
+            {% endif %}
         </nav>
     </aside>
 
@@ -144,6 +152,11 @@
             <div class="page-heading">
                 {% block page_title %}{% endblock %}
             </div>
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}<div class="message message-{{ message.tags }}">{{ message }}</div>{% endfor %}
+            </div>
+            {% endif %}
             {% block content %}{% endblock %}
         </section>
 

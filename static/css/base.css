@@ -832,6 +832,31 @@ svg {
   word-break: break-word;
 }
 
+.messages {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.message {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 650;
+}
+
+.message-success {
+  border-color: #b7d7c0;
+  background: #edf7ef;
+}
+
+.message-error {
+  border-color: #e3b6b6;
+  background: #fff1f1;
+}
+
 .auth-shell {
   min-height: 100vh;
   display: grid;
@@ -840,4 +865,88 @@ svg {
 }
 .auth-card {
   width: min(100%, 520px);
+}
+
+.table img.media-thumb,
+img.media-thumb {
+  width: 64px !important;
+  height: 64px !important;
+  max-width: 64px !important;
+  max-height: 64px !important;
+  object-fit: cover !important;
+  display: block !important;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface-muted);
+}
+
+.table .media-placeholder,
+.media-placeholder.media-thumb {
+  width: 64px !important;
+  height: 64px !important;
+  max-width: 64px !important;
+  max-height: 64px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 750;
+  text-align: center;
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--color-surface-muted);
+}
+
+img.brand-logo,
+img.catalog-logo,
+.brand-logo.catalog-logo {
+  width: 48px !important;
+  height: 48px !important;
+  max-width: 48px !important;
+  max-height: 48px !important;
+  object-fit: contain !important;
+  display: block !important;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.brand-logo.catalog-logo.media-placeholder,
+.media-placeholder.catalog-logo {
+  width: 48px !important;
+  height: 48px !important;
+  max-width: 48px !important;
+  max-height: 48px !important;
+}
+
+.media-detail {
+  max-width: 260px !important;
+  max-height: 180px !important;
+  object-fit: contain !important;
+  display: block !important;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface-muted);
+}
+
+.media-detail.media-placeholder {
+  width: 260px !important;
+  height: 180px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  font-size: 14px;
+  font-weight: 750;
+  text-align: center;
+  border: 1px dashed var(--color-border);
+  overflow: hidden;
+}
+
+.media-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
