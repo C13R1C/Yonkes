@@ -3,21 +3,47 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><span>Usuarios</span>{% endblock %}
 {% block page_title %}<h1>Usuarios</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack">
-  <div class="card-header"><h2 class="card-title">Filtros</h2><a class="btn btn-primary" href="/usuarios/nuevo/">Nuevo usuario</a></div>
-  <form method="get" class="form-grid">
-    <div class="form-group full-width"><label class="form-label">Buscar</label><input class="form-control" name="q" value="{{ filters.q }}" placeholder="username, nombre, email, teléfono"></div>
-    <div class="form-group"><label class="form-label">Rol</label><select class="form-select" name="rol"><option value="">Todos</option>{% for value,label in roles %}<option value="{{ value }}" {% if filters.rol == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
-    <div class="form-group"><label class="form-label">Yonke</label><select class="form-select" name="yonke"><option value="">Todos</option>{% for y in yonkes %}<option value="{{ y.id }}" {% if filters.yonke == y.id|stringformat:'s' %}selected{% endif %}>{{ y.nombre }}</option>{% endfor %}</select></div>
-    <div class="form-group"><label class="form-label">Activo</label><select class="form-select" name="activo"><option value="">Todos</option><option value="true" {% if filters.activo == 'true' %}selected{% endif %}>Sí</option><option value="false" {% if filters.activo == 'false' %}selected{% endif %}>No</option></select></div>
-    <div class="form-group full-width inline-actions"><button class="btn btn-primary" type="submit">Filtrar</button><a class="btn btn-secondary" href="/usuarios/">Limpiar</a></div>
+<section class="users-hero section-stack">
+  <div>
+    <span class="detail-kicker">Administración de accesos</span>
+    <h2>Usuarios</h2>
+    <p>Consulta y administra las cuentas permitidas para tu alcance actual.</p>
+  </div>
+  <a class="btn btn-primary" href="/usuarios/nuevo/">Nuevo usuario</a>
+</section>
+
+<section class="card users-filter-card section-stack">
+  <div class="card-header"><div><h2 class="card-title">Filtros</h2><p class="list-helper-text">Filtra por usuario, rol, yonke asociado o estado.</p></div></div>
+  <form method="get" class="users-filter-form">
+    <div class="form-group users-filter-search"><label class="form-label" for="usuarios-q">Buscar</label><input class="form-control" id="usuarios-q" name="q" value="{{ filters.q }}" placeholder="username, nombre, email, teléfono"></div>
+    <div class="form-group"><label class="form-label" for="usuarios-rol">Rol</label><select class="form-select" id="usuarios-rol" name="rol"><option value="">Todos</option>{% for value,label in roles %}<option value="{{ value }}" {% if filters.rol == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label class="form-label" for="usuarios-yonke">Yonke</label><select class="form-select" id="usuarios-yonke" name="yonke"><option value="">Todos</option>{% for y in yonkes %}<option value="{{ y.id }}" {% if filters.yonke == y.id|stringformat:'s' %}selected{% endif %}>{{ y.nombre }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label class="form-label" for="usuarios-activo">Activo</label><select class="form-select" id="usuarios-activo" name="activo"><option value="">Todos</option><option value="true" {% if filters.activo == 'true' %}selected{% endif %}>Sí</option><option value="false" {% if filters.activo == 'false' %}selected{% endif %}>No</option></select></div>
+    <div class="users-filter-actions"><button class="btn btn-primary" type="submit">Filtrar</button><a class="btn btn-secondary" href="/usuarios/">Limpiar</a></div>
   </form>
 </section>
-<section class="card"><header class="card-header"><h2 class="card-title">Listado de usuarios</h2></header>
-{% if users %}
-<div class="table-responsive"><table class="table"><thead><tr><th>Usuario</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Yonke</th><th>Teléfono</th><th>Activo</th><th>Fecha de registro</th><th>Acciones</th></tr></thead><tbody>
-{% for u in users %}<tr><td>{{ u.username }}</td><td>{{ u.first_name }} {{ u.last_name }}</td><td>{{ u.email|default:'Sin datos' }}</td><td><span class="badge badge-info">{{ u.profile.get_rol_display|default:'Sin datos' }}</span></td><td>{% if u.profile.yonke %}{{ u.profile.yonke.nombre }}{% else %}Sin datos{% endif %}</td><td>{{ u.profile.telefono|default:'Sin datos' }}</td><td><span class="badge {% if u.profile.activo %}badge-success{% else %}badge-muted{% endif %}">{{ u.profile.activo|yesno:"Sí,No" }}</span></td><td>{{ u.date_joined|date:"Y-m-d H:i" }}</td><td><div class="inline-actions"><a class="btn btn-secondary" href="/usuarios/{{ u.id }}/">Ver</a><a class="btn btn-secondary" href="/usuarios/{{ u.id }}/editar/">Editar</a></div></td></tr>{% endfor %}
-</tbody></table></div>
-{% else %}<div class="empty-state">No hay usuarios registrados con esos filtros.</div>{% endif %}
+
+<section class="card users-list-panel">
+  <header class="card-header"><div><h2 class="card-title">Listado de usuarios</h2><p class="list-helper-text">{{ users|length }} usuario{% if users|length != 1 %}s{% endif %} visible{% if users|length != 1 %}s{% endif %}.</p></div></header>
+  {% if users %}
+  <div class="users-card-list">
+    {% for u in users %}
+    <article class="user-card">
+      <div class="user-card-main">
+        <span class="detail-kicker">Usuario</span>
+        <h3>{% if u.first_name or u.last_name %}{{ u.first_name }} {{ u.last_name }}{% else %}{{ u.username }}{% endif %}</h3>
+        <p>{{ u.username }} · {{ u.email|default:'Sin datos' }}</p>
+        <div class="user-card-badges"><span class="badge badge-info">{{ u.profile.get_rol_display|default:'Sin datos' }}</span><span class="badge {% if u.profile.activo %}badge-success{% else %}badge-muted{% endif %}">{% if u.profile.activo %}Activo{% else %}Inactivo{% endif %}</span>{% if u.profile.yonke %}<span class="badge badge-muted">{{ u.profile.yonke.nombre }}</span>{% endif %}</div>
+      </div>
+      <div class="user-card-meta"><span>Teléfono</span><strong>{{ u.profile.telefono|default:'Sin datos' }}</strong><span>Registro</span><strong>{{ u.date_joined|date:"Y-m-d H:i" }}</strong></div>
+      <div class="user-card-actions"><a class="btn btn-secondary" href="/usuarios/{{ u.id }}/">Ver</a><a class="btn btn-secondary" href="/usuarios/{{ u.id }}/editar/">Editar</a></div>
+    </article>
+    {% endfor %}
+  </div>
+
+  <div class="table-responsive users-table-wrap"><table class="table users-table"><thead><tr><th>Usuario</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Yonke</th><th>Teléfono</th><th>Activo</th><th>Fecha de registro</th><th>Acciones</th></tr></thead><tbody>
+  {% for u in users %}<tr><td>{{ u.username }}</td><td>{{ u.first_name }} {{ u.last_name }}</td><td>{{ u.email|default:'Sin datos' }}</td><td><span class="badge badge-info">{{ u.profile.get_rol_display|default:'Sin datos' }}</span></td><td>{% if u.profile.yonke %}{{ u.profile.yonke.nombre }}{% else %}Sin datos{% endif %}</td><td>{{ u.profile.telefono|default:'Sin datos' }}</td><td><span class="badge {% if u.profile.activo %}badge-success{% else %}badge-muted{% endif %}">{{ u.profile.activo|yesno:"Sí,No" }}</span></td><td>{{ u.date_joined|date:"Y-m-d H:i" }}</td><td><div class="users-table-actions"><a class="btn btn-secondary" href="/usuarios/{{ u.id }}/">Ver</a><a class="btn btn-secondary" href="/usuarios/{{ u.id }}/editar/">Editar</a></div></td></tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}<div class="empty-state">No hay usuarios registrados con esos filtros.</div>{% endif %}
 </section>
 {% endblock %}

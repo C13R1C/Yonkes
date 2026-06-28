@@ -3,18 +3,48 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="{% url 'inventario_html:piezas-list' %}">Piezas</a><span>/</span><span>{% if is_edit %}Editar{% else %}Nueva{% endif %}</span>{% endblock %}
 {% block page_title %}<h1>{% if is_edit %}Editar pieza{% else %}Nueva pieza{% endif %}</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack">
-  <form method="post" enctype="multipart/form-data" action="{% if is_edit %}{% url 'inventario_html:piezas-edit' pieza.id %}{% else %}{% url 'inventario_html:piezas-create' %}{% if vehiculo_context %}?vehiculo={{ vehiculo_context.id }}{% endif %}{% endif %}" class="form-grid">{% csrf_token %}
+<section class="capture-form-shell">
+  <form method="post" enctype="multipart/form-data" action="{% if is_edit %}{% url 'inventario_html:piezas-edit' pieza.id %}{% else %}{% url 'inventario_html:piezas-create' %}{% if vehiculo_context %}?vehiculo={{ vehiculo_context.id }}{% endif %}{% endif %}" class="capture-form">{% csrf_token %}
     {% if vehiculo_context %}<input type="hidden" name="vehiculo_context" value="{{ vehiculo_context.id }}">{% endif %}
+    <section class="capture-form-hero"><div><span class="detail-kicker">Inventario de piezas</span><h2>{% if is_edit %}Editar pieza{% else %}Nueva pieza{% endif %}</h2><p>Captura la información clave de la pieza para ubicarla, publicarla y administrarla con claridad.</p></div><div class="capture-hero-actions"><a class="btn btn-secondary" href="{% if is_edit %}{% url 'inventario_html:piezas-detail' pieza.id %}{% elif vehiculo_context %}{% url 'inventario_html:vehiculos-detail' vehiculo_context.id %}{% else %}{% url 'inventario_html:piezas-list' %}{% endif %}">Regresar</a><button class="btn btn-primary" type="submit">Guardar pieza</button></div></section>
     {% if form.non_field_errors %}<div class="form-errors full-width">{{ form.non_field_errors }}</div>{% endif %}
-    {% for field in form %}
-    <div class="form-group {% if field.name == 'observaciones' %}full-width{% endif %}">
-      <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-      {{ field }}
-      {% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}
-    </div>
-    {% endfor %}
-    <div class="form-group full-width inline-actions"><a class="btn btn-secondary" href="{% if is_edit %}{% url 'inventario_html:piezas-detail' pieza.id %}{% elif vehiculo_context %}{% url 'inventario_html:vehiculos-detail' vehiculo_context.id %}{% else %}{% url 'inventario_html:piezas-list' %}{% endif %}">Regresar</a><button class="btn btn-primary" type="submit">Guardar</button></div>
+    <section class="capture-section">
+      <div class="capture-section-heading"><span class="detail-kicker">Identificación</span><h3>Datos base</h3><p>Define el nombre de captura, su categoría y la relación con yonke o vehículo.</p></div>
+      <div class="capture-section-grid">
+        {% with field=form.yonke %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}<p class="field-help">Selecciona el yonke responsable de esta pieza.</p>{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %} {% with field=form.vehiculo %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %} {% with field=form.nombre %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %} {% with field=form.nombre_normalizado %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %} {% with field=form.alias_local %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %} {% with field=form.categoria %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %}
+      </div>
+    </section>
+    <section class="capture-section">
+      <div class="capture-section-heading"><span class="detail-kicker">Compatibilidad</span><h3>Aplicación sugerida</h3><p>Registra referencias para facilitar la búsqueda de piezas compatibles.</p></div>
+      <div class="capture-section-grid">
+        {% with field=form.marca_compatible %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %} {% with field=form.modelo_compatible %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %} {% with field=form.anio_inicio %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %} {% with field=form.anio_fin %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %}
+      </div>
+    </section>
+    <section class="capture-section">
+      <div class="capture-section-heading"><span class="detail-kicker">Imagen</span><h3>Foto principal</h3><p>Agrega una imagen clara para reconocer la pieza rápidamente.</p></div>
+      <div class="capture-section-grid">
+        {% with field=form.imagen_principal %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %} full-width"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %}
+      </div>
+    </section>
+    <section class="capture-section">
+      <div class="capture-section-heading"><span class="detail-kicker">Inventario</span><h3>Existencia y ubicación</h3><p>Esta información ayuda a localizar y controlar la pieza dentro del inventario.</p></div>
+      <div class="capture-section-grid">
+        {% with field=form.cantidad %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %} {% with field=form.condicion %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %} {% with field=form.estatus %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %} {% with field=form.ubicacion %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %}
+      </div>
+    </section>
+    <section class="capture-section">
+      <div class="capture-section-heading"><span class="detail-kicker">Precio y visibilidad</span><h3>Datos comerciales</h3><p>Controla el precio capturado y si será visible para otros usuarios autorizados.</p></div>
+      <div class="capture-section-grid">
+        {% with field=form.precio %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %} {% with field=form.precio_visible %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %} {% with field=form.visibilidad %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %}
+      </div>
+    </section>
+    <section class="capture-section">
+      <div class="capture-section-heading"><span class="detail-kicker">Observaciones</span><h3>Notas adicionales</h3><p>Registra detalles útiles para el equipo operativo.</p></div>
+      <div class="capture-section-grid">
+        {% with field=form.observaciones %}<div class="form-group capture-field{% if field.errors %} has-error{% endif %} full-width"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endwith %}
+      </div>
+    </section>
+    <div class="capture-form-actions"><a class="btn btn-secondary" href="{% if is_edit %}{% url 'inventario_html:piezas-detail' pieza.id %}{% elif vehiculo_context %}{% url 'inventario_html:vehiculos-detail' vehiculo_context.id %}{% else %}{% url 'inventario_html:piezas-list' %}{% endif %}">Cancelar</a><button class="btn btn-primary" type="submit">Guardar pieza</button></div>
   </form>
 </section>
 {% endblock %}
