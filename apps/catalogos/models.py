@@ -1,4 +1,10 @@
-﻿from django.db import models
+from django.db import models
+
+
+VISIBILIDAD_CHOICES = [
+    ("privado", "Privado"),
+    ("red", "Red"),
+]
 
 
 class Marca(models.Model):
@@ -6,6 +12,7 @@ class Marca(models.Model):
     nombre = models.CharField(max_length=100)
     logo = models.ImageField(upload_to="marcas/", blank=True)
     activo = models.BooleanField(default=True)
+    visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
     class Meta:
         verbose_name = "Marca"
@@ -22,6 +29,7 @@ class ModeloVehiculo(models.Model):
     marca = models.ForeignKey(Marca, on_delete=models.CASCADE, related_name="modelos")
     nombre = models.CharField(max_length=100)
     activo = models.BooleanField(default=True)
+    visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
     class Meta:
         verbose_name = "Modelo de vehículo"
@@ -37,6 +45,7 @@ class CategoriaPieza(models.Model):
     yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="categorias_catalogo")
     nombre = models.CharField(max_length=100)
     activo = models.BooleanField(default=True)
+    visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
     class Meta:
         verbose_name = "Categoría de pieza"
@@ -53,6 +62,7 @@ class NombrePieza(models.Model):
     nombre_normalizado = models.CharField(max_length=150)
     categoria = models.ForeignKey(CategoriaPieza, on_delete=models.SET_NULL, null=True, blank=True)
     activo = models.BooleanField(default=True)
+    visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
     class Meta:
         verbose_name = "Nombre de pieza"
@@ -67,6 +77,7 @@ class AliasPieza(models.Model):
     yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="alias_piezas")
     nombre_pieza = models.ForeignKey(NombrePieza, on_delete=models.CASCADE, related_name="alias")
     alias = models.CharField(max_length=150)
+    visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
     class Meta:
         verbose_name = "Alias de pieza"

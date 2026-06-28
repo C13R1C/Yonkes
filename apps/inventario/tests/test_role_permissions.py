@@ -8,7 +8,7 @@ from django.test.utils import override_settings
 from django.urls import reverse
 
 from apps.accounts.models import UserProfile
-from apps.catalogos.models import AliasPieza, Marca, ModeloVehiculo, NombrePieza
+from apps.catalogos.models import AliasPieza, CategoriaPieza, Marca, ModeloVehiculo, NombrePieza
 from apps.inventario.models import Pieza, Vehiculo
 from apps.yonkes.models import Yonke
 
@@ -439,10 +439,15 @@ class InventoryRolePermissionTests(TestCase):
         alias = AliasPieza.objects.get(alias="Stop trasero")
         self.assertEqual(alias.yonke, self.yonke_a)
 
-    def test_admin_cannot_create_operational_catalog(self):
+    def test_admin_can_create_global_piece_name_catalog(self):
         self.client.force_login(self.admin)
-        response = self.client.get("/catalogos/nombres-piezas/nuevo/")
-        self.assertEqual(response.status_code, 403)
+        response = self.client.post(
+            "/catalogos/nombres-piezas/nuevo/",
+            {"nombre_normalizado": "Defensa global", "activo": "on", "visibilidad": "red"},
+        )
+        self.assertEqual(response.status_code, 302)
+        nombre = NombrePieza.objects.get(nombre_normalizado="Defensa global")
+        self.assertIsNone(nombre.yonke)
 
     def test_private_catalog_does_not_appear_for_other_yonke(self):
         private_name = NombrePieza.objects.create(nombre_normalizado="Moldura privada", yonke=self.yonke_b, activo=True)
@@ -450,6 +455,107 @@ class InventoryRolePermissionTests(TestCase):
         response = self.client.get(reverse("inventario_html:piezas-create"))
         content = response.content.decode()
         self.assertNotIn(private_name.nombre_normalizado, content)
+
+
+    def test_canaco_creates_global_brand(self):
+        self.client.force_login(self.admin)
+        response = self.client.post("/catalogos/marcas/nuevo/", {"nombre": "Global Nissan", "activo": "on", "visibilidad": "red"})
+        self.assertEqual(response.status_code, 302)
+        marca = Marca.objects.get(nombre="Global Nissan")
+        self.assertIsNone(marca.yonke)
+
+    def test_owner_creates_own_brand(self):
+        self.client.force_login(self.owner)
+        response = self.client.post("/catalogos/marcas/nuevo/", {"nombre": "Marca propia fase", "activo": "on", "visibilidad": "privado"})
+        self.assertEqual(response.status_code, 302)
+        marca = Marca.objects.get(nombre="Marca propia fase")
+        self.assertEqual(marca.yonke, self.yonke_a)
+
+    def test_owner_cannot_edit_global_brand(self):
+        marca = Marca.objects.create(nombre="Global Ford", activo=True, visibilidad="red")
+        self.client.force_login(self.owner)
+        response = self.client.get(f"/catalogos/marcas/{marca.pk}/editar/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_owner_cannot_edit_other_yonke_brand(self):
+        marca = Marca.objects.create(nombre="Otra privada", yonke=self.yonke_b, activo=True, visibilidad="red")
+        self.client.force_login(self.owner)
+        response = self.client.get(f"/catalogos/marcas/{marca.pk}/editar/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_owner_sees_global_own_and_shared_brands_not_private_other(self):
+        global_brand = Marca.objects.create(nombre="Global visible", activo=True)
+        own_brand = Marca.objects.create(nombre="Propia visible", yonke=self.yonke_a, activo=True)
+        shared_brand = Marca.objects.create(nombre="Compartida visible", yonke=self.yonke_b, activo=True, visibilidad="red")
+        private_brand = Marca.objects.create(nombre="Privada invisible", yonke=self.yonke_b, activo=True, visibilidad="privado")
+        self.client.force_login(self.owner)
+        response = self.client.get("/catalogos/marcas/")
+        content = response.content.decode()
+        self.assertContains(response, global_brand.nombre)
+        self.assertContains(response, own_brand.nombre)
+        self.assertContains(response, shared_brand.nombre)
+        self.assertNotIn(private_brand.nombre, content)
+
+    def test_catalog_duplicate_normalized_names_are_rejected(self):
+        Marca.objects.create(nombre="Nissan", yonke=self.yonke_a, activo=True)
+        self.client.force_login(self.owner)
+        response = self.client.post("/catalogos/marcas/nuevo/", {"nombre": "  nIsSaN  ", "activo": "on"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ya existe un registro equivalente.")
+        self.assertEqual(Marca.objects.filter(yonke=self.yonke_a).count(), 1)
+
+    def test_model_api_filters_by_brand_and_catalog_scope(self):
+        marca = Marca.objects.create(nombre="Marca modelos alcance", yonke=self.yonke_a, activo=True)
+        own_model = ModeloVehiculo.objects.create(marca=marca, nombre="Propio", yonke=self.yonke_a, activo=True)
+        shared_model = ModeloVehiculo.objects.create(marca=marca, nombre="Compartido", yonke=self.yonke_b, activo=True, visibilidad="red")
+        private_model = ModeloVehiculo.objects.create(marca=marca, nombre="Privado", yonke=self.yonke_b, activo=True, visibilidad="privado")
+        self.client.force_login(self.owner)
+        response = self.client.get("/api/catalogos/modelos/", {"marca": marca.pk, "activo": "true"})
+        content = response.content.decode()
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(own_model.nombre, content)
+        self.assertIn(shared_model.nombre, content)
+        self.assertNotIn(private_model.nombre, content)
+
+    def test_vehicle_rejects_private_other_catalog_by_manual_post(self):
+        other_brand = Marca.objects.create(nombre="Privada POST", yonke=self.yonke_b, activo=True, visibilidad="privado")
+        other_model = ModeloVehiculo.objects.create(marca=other_brand, nombre="Privado POST", yonke=self.yonke_b, activo=True, visibilidad="privado")
+        self.client.force_login(self.owner)
+        response = self.client.post(reverse("inventario_html:vehiculos-create"), {"yonke": self.yonke_a.pk, "marca": other_brand.pk, "modelo": other_model.pk, "anio": 2020, "estatus": "disponible", "visibilidad": "visible"})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Vehiculo.objects.filter(marca=other_brand).exists())
+
+    def test_nombre_pieza_global_and_own_visible_in_piece_form(self):
+        global_name = NombrePieza.objects.create(nombre_normalizado="Global nombre", activo=True)
+        own_name = NombrePieza.objects.create(nombre_normalizado="Propio nombre", yonke=self.yonke_a, activo=True)
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("inventario_html:piezas-create"))
+        self.assertContains(response, global_name.nombre_normalizado)
+        self.assertContains(response, own_name.nombre_normalizado)
+
+    def test_alias_piece_is_own_yonke_and_not_editable_by_others(self):
+        nombre = NombrePieza.objects.create(nombre_normalizado="Calavera alias", yonke=self.yonke_a, activo=True)
+        alias = AliasPieza.objects.create(nombre_pieza=nombre, alias="Stop", yonke=self.yonke_a)
+        self.client.force_login(self._user("ownerb", UserProfile.ROLE_DUENO_YONKE, self.yonke_b))
+        response = self.client.get(f"/catalogos/alias-piezas/{alias.pk}/editar/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_search_user_cannot_admin_catalogs_list(self):
+        self.client.force_login(self.search_user)
+        response = self.client.get("/catalogos/marcas/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_catalog_api_respects_scope(self):
+        Marca.objects.create(nombre="API global", activo=True)
+        Marca.objects.create(nombre="API shared", yonke=self.yonke_b, activo=True, visibilidad="red")
+        Marca.objects.create(nombre="API private", yonke=self.yonke_b, activo=True, visibilidad="privado")
+        self.client.force_login(self.owner)
+        response = self.client.get("/api/catalogos/marcas/")
+        content = response.content.decode()
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("API global", content)
+        self.assertIn("API shared", content)
+        self.assertNotIn("API private", content)
 
     def test_owner_inventory_admin_lists_own_inventory_first(self):
         self.client.force_login(self.owner)
