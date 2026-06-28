@@ -9,6 +9,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body data-active-module="{{ active_module|default:'' }}">
+    <a class="skip-link" href="#main-content">Saltar al contenido</a>
     <header class="app-navbar">
         <div class="navbar-brand-group">
             <button class="icon-button sidebar-toggle" type="button" aria-label="Abrir menú" aria-controls="app-sidebar" aria-expanded="false">
@@ -37,13 +38,14 @@
         </form>
 
         <nav class="navbar-actions" aria-label="Acciones superiores">
-            <button class="icon-button" type="button" aria-label="Notificaciones">
+            <button class="icon-button navbar-action-button" type="button" aria-label="Notificaciones" aria-disabled="true">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
                     <path d="M10 21h4"></path>
                 </svg>
+                <span class="navbar-action-dot" aria-hidden="true"></span>
             </button>
-            <button class="icon-button" type="button" aria-label="Ayuda">
+            <button class="icon-button navbar-action-button" type="button" aria-label="Ayuda" aria-disabled="true">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M12 18h.01"></path>
                     <path d="M9.1 9a3 3 0 1 1 5.8 1c-.5 1.2-1.7 1.7-2.4 2.5-.4.5-.5.9-.5 1.5"></path>
@@ -78,7 +80,12 @@
     <div class="sidebar-backdrop" data-sidebar-backdrop></div>
 
     <aside class="app-sidebar" id="app-sidebar" aria-label="Navegación principal">
+        <div class="sidebar-panel-heading">
+            <span class="sidebar-eyebrow">Menú principal</span>
+            <span class="sidebar-caption">Operación Yonkes</span>
+        </div>
         <nav class="sidebar-nav">
+            <div class="sidebar-section-label">General</div>
             <a class="sidebar-link {% if active_module == 'dashboard' %}is-active{% endif %}" href="/" data-module="dashboard">
                 <span class="sidebar-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24"><path d="M4 13h6V4H4v9ZM14 20h6V4h-6v16ZM4 20h6v-3H4v3Z"></path></svg>
@@ -109,6 +116,9 @@
                 </span>
                 Búsqueda
             </a>
+            {% if perm_can_access_catalogs or perm_can_create_inventory or perm_can_access_admin_area or perm_can_manage_users %}
+            <div class="sidebar-section-label">Administración</div>
+            {% endif %}
             {% if perm_can_access_catalogs %}
             <a class="sidebar-link {% if active_module == 'catalogos' %}is-active{% endif %}" href="/catalogos/" data-module="catalogos">
                 <span class="sidebar-icon" aria-hidden="true">
@@ -142,20 +152,33 @@
             </a>
             {% endif %}
         </nav>
+        <div class="sidebar-footer-note">
+            <span class="status-dot" aria-hidden="true"></span>
+            Sistema operativo
+        </div>
     </aside>
 
     <main class="app-main" id="main-content">
         <section class="page-shell">
-            {% if messages %}<div class="messages-container">{% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
-            <div class="breadcrumb">
-                {% block breadcrumbs %}{% endblock %}
-            </div>
-            <div class="page-heading">
-                {% block page_title %}{% endblock %}
-            </div>
+            <header class="page-header">
+                <div class="breadcrumb">
+                    {% block breadcrumbs %}{% endblock %}
+                </div>
+                <div class="page-heading">
+                    {% block page_title %}{% endblock %}
+                    {% block page_subtitle %}{% endblock %}
+                </div>
+            </header>
             {% if messages %}
-            <div class="messages">
-                {% for message in messages %}<div class="message message-{{ message.tags }}">{{ message }}</div>{% endfor %}
+            <div class="messages" aria-live="polite">
+                {% for message in messages %}
+                <div class="message message-{{ message.tags }}" role="status">
+                    <span>{{ message }}</span>
+                    <button class="message-dismiss" type="button" aria-label="Cerrar mensaje" data-dismiss-message>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                {% endfor %}
             </div>
             {% endif %}
             {% block content %}{% endblock %}

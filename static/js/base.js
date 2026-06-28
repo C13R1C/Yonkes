@@ -6,6 +6,7 @@
     const userMenuTrigger = userMenu ? userMenu.querySelector(".user-menu-trigger") : null;
     const searchForm = document.querySelector("[data-global-search]");
     const searchFeedback = document.querySelector("[data-search-feedback]");
+    const sidebarLinks = document.querySelectorAll(".sidebar-link");
     let feedbackTimer = null;
 
     function setSidebar(open) {
@@ -13,6 +14,19 @@
 
         if (sidebarToggle) {
             sidebarToggle.setAttribute("aria-expanded", String(open));
+        }
+
+        if (sidebarBackdrop) {
+            sidebarBackdrop.setAttribute("aria-hidden", String(!open));
+        }
+
+        if (open) {
+            const activeLink = document.querySelector(".sidebar-link.is-active") || document.querySelector(".sidebar-link");
+            if (activeLink && window.matchMedia("(max-width: 1024px)").matches) {
+                window.setTimeout(function () {
+                    activeLink.focus({ preventScroll: true });
+                }, 120);
+            }
         }
     }
 
@@ -59,6 +73,14 @@
         });
     }
 
+    sidebarLinks.forEach(function (link) {
+        link.addEventListener("click", function () {
+            if (window.matchMedia("(max-width: 1024px)").matches) {
+                setSidebar(false);
+            }
+        });
+    });
+
     if (searchForm) {
         searchForm.addEventListener("submit", function (event) {
             const input = searchForm.querySelector("input[type='search']");
@@ -77,6 +99,19 @@
             }
         });
     }
+
+    document.addEventListener("click", function (event) {
+        const dismissButton = event.target.closest("[data-dismiss-message]");
+
+        if (!dismissButton) {
+            return;
+        }
+
+        const message = dismissButton.closest(".message");
+        if (message) {
+            message.remove();
+        }
+    });
 
     document.addEventListener("click", function (event) {
         if (userMenu && !userMenu.contains(event.target)) {
