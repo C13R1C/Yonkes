@@ -1,9 +1,13 @@
 from django.db import models
 
 
+VISIBILIDAD_CHOICES = [("privado", "Privado"), ("red", "Red")]
+
+
 class Marca(models.Model):
     yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="marcas_catalogo")
-    nombre = models.CharField(max_length=100, unique=True)
+    nombre = models.CharField(max_length=100)
+    logo = models.ImageField(upload_to="marcas/", blank=True)
     activo = models.BooleanField(default=True)
     visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
@@ -25,8 +29,8 @@ class ModeloVehiculo(models.Model):
     visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
     class Meta:
-        verbose_name = "Modelo de vehiculo"
-        verbose_name_plural = "Modelos de vehiculo"
+        verbose_name = "Modelo de vehículo"
+        verbose_name_plural = "Modelos de vehículo"
         unique_together = ["yonke", "marca", "nombre"]
         ordering = ["marca__nombre", "nombre"]
 
@@ -36,7 +40,7 @@ class ModeloVehiculo(models.Model):
 
 class CategoriaPieza(models.Model):
     yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="categorias_catalogo")
-    nombre = models.CharField(max_length=100, unique=True)
+    nombre = models.CharField(max_length=100)
     activo = models.BooleanField(default=True)
     visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
@@ -71,6 +75,7 @@ class AliasPieza(models.Model):
     nombre_pieza = models.ForeignKey(NombrePieza, on_delete=models.CASCADE, related_name="alias")
     alias = models.CharField(max_length=150)
     activo = models.BooleanField(default=True)
+    visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
     class Meta:
         verbose_name = "Alias de pieza"

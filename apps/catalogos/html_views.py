@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
@@ -10,6 +11,7 @@ from apps.yonkes.models import Yonke
 from .forms import AliasPiezaForm, CategoriaPiezaForm, MarcaForm, ModeloVehiculoForm, NombrePiezaForm
 from .models import AliasPieza, CategoriaPieza, Marca, ModeloVehiculo, NombrePieza
 from .permissions import can_access_catalogs, can_manage_catalog_record, scope_catalog_queryset
+from .policies import can_edit_catalog_item, catalog_queryset_for_user
 
 CATALOGS = {
     "marcas": (Marca, MarcaForm, "Marcas", "Marca", ["nombre"]),
@@ -93,7 +95,7 @@ def _catalog_form(request, *, model, form_class, slug, title, pk=None):
     instance = get_object_or_404(scope_catalog_queryset(request.user, model.objects.all()), pk=pk) if pk else None
     if instance and not can_manage_catalog_record(request.user, instance):
         raise PermissionDenied("No tienes permiso para realizar esta acción.")
-    form = form_class(request.POST or None, instance=instance)
+    form = form_class(request.POST or None, request.FILES or None, instance=instance, user=request.user)
     if request.method == "POST" and form.is_valid():
         obj = form.save(commit=False)
         if not pk and hasattr(obj, "yonke_id"):
@@ -104,6 +106,18 @@ def _catalog_form(request, *, model, form_class, slug, title, pk=None):
         obj.save()
         form.save_m2m()
         return redirect(f"catalogos-{slug}-list")
+    return render(
+        request,
+        "catalogos/form.html",
+        {
+            "active_module": "catalogos",
+            "title": title,
+            "slug": slug,
+            "form": form,
+            "object": instance,
+            "is_edit": bool(pk),
+        },
+    )
 
 @require_POST
 def _catalog_delete(request, *, model, slug):
