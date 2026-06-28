@@ -1,10 +1,11 @@
 {% extends "layout/base.html" %}
 {% block title %}{% if is_edit %}Editar pieza{% else %}Nueva pieza{% endif %} | Piezas{% endblock %}
-{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/piezas/">Piezas</a><span>/</span><span>{% if is_edit %}Editar{% else %}Nueva{% endif %}</span>{% endblock %}
+{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="{% url 'inventario_html:piezas-list' %}">Piezas</a><span>/</span><span>{% if is_edit %}Editar{% else %}Nueva{% endif %}</span>{% endblock %}
 {% block page_title %}<h1>{% if is_edit %}Editar pieza{% else %}Nueva pieza{% endif %}</h1>{% endblock %}
 {% block content %}
 <section class="card section-stack">
-  <form method="post" class="form-grid">{% csrf_token %}
+  <form method="post" enctype="multipart/form-data" action="{% if is_edit %}{% url 'inventario_html:piezas-edit' pieza.id %}{% else %}{% url 'inventario_html:piezas-create' %}{% if vehiculo_context %}?vehiculo={{ vehiculo_context.id }}{% endif %}{% endif %}" class="form-grid">{% csrf_token %}
+    {% if vehiculo_context %}<input type="hidden" name="vehiculo_context" value="{{ vehiculo_context.id }}">{% endif %}
     {% if form.non_field_errors %}<div class="form-errors full-width">{{ form.non_field_errors }}</div>{% endif %}
     {% for field in form %}
     <div class="form-group {% if field.name == 'observaciones' %}full-width{% endif %}">
@@ -13,7 +14,7 @@
       {% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}
     </div>
     {% endfor %}
-    <div class="form-group full-width inline-actions"><a class="btn btn-secondary" href="{% if is_edit %}/piezas/{{ pieza.id }}/{% else %}/piezas/{% endif %}">Cancelar</a><button class="btn btn-primary" type="submit">Guardar</button></div>
+    <div class="form-group full-width inline-actions"><a class="btn btn-secondary" href="{% if is_edit %}{% url 'inventario_html:piezas-detail' pieza.id %}{% elif vehiculo_context %}{% url 'inventario_html:vehiculos-detail' vehiculo_context.id %}{% else %}{% url 'inventario_html:piezas-list' %}{% endif %}">Regresar</a><button class="btn btn-primary" type="submit">Guardar</button></div>
   </form>
 </section>
 {% endblock %}

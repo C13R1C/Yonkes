@@ -1,7 +1,9 @@
-from django.db.models import Case, IntegerField, Q, When
+from django.db.models import Case, IntegerField, Q, Value, When
 from django.shortcuts import render
 
+from apps.accounts.permissions import is_admin_general, user_yonke
 from apps.catalogos.models import CategoriaPieza, Marca
+from apps.catalogos.policies import relation_queryset_for_user
 from apps.inventario.models import Pieza
 from apps.yonkes.models import Yonke
 
@@ -17,6 +19,7 @@ def buscar_piezas(request):
     estatus = request.GET.get("estatus", "").strip()
     solo_disponibles = request.GET.get("solo_disponibles", "").lower() in ["1", "true", "si", "sí", "on"]
 
+    current_yonke = user_yonke(request.user)
     queryset = (
         Pieza.objects.select_related(
             "yonke",
@@ -28,9 +31,14 @@ def buscar_piezas(request):
             "marca_compatible",
             "modelo_compatible",
         )
-        .filter(visibilidad="visible")
         .exclude(estatus__in=["vendida", "agotada", "bloqueada", "no_visible"])
     )
+    if is_admin_general(request.user):
+        pass
+    elif current_yonke:
+        queryset = queryset.filter(Q(yonke=current_yonke) | Q(visibilidad="visible"))
+    else:
+        queryset = queryset.filter(visibilidad="visible")
 
     if pieza:
         queryset = queryset.filter(
@@ -79,6 +87,17 @@ def buscar_piezas(request):
     if solo_disponibles:
         queryset = queryset.filter(estatus="disponible", cantidad__gt=0)
 
+    if current_yonke and not is_admin_general(request.user):
+        queryset = queryset.annotate(
+            prioridad_yonke=Case(
+                When(yonke=current_yonke, then=0),
+                default=1,
+                output_field=IntegerField(),
+            )
+        )
+    else:
+        queryset = queryset.annotate(prioridad_yonke=Value(0, output_field=IntegerField()))
+
     if pieza:
         queryset = queryset.annotate(
             exactitud=Case(
@@ -87,9 +106,9 @@ def buscar_piezas(request):
                 default=2,
                 output_field=IntegerField(),
             )
-        ).order_by("exactitud", "-creado_en", "-id")
+        ).order_by("prioridad_yonke", "exactitud", "-creado_en", "-id")
     else:
-        queryset = queryset.order_by("-creado_en", "-id")
+        queryset = queryset.order_by("prioridad_yonke", "-creado_en", "-id")
 
     hay_filtros = any([pieza, marca, modelo, anio, categoria, yonke, condicion, estatus, solo_disponibles])
 
@@ -112,8 +131,8 @@ def buscar_piezas(request):
                 "solo_disponibles": solo_disponibles,
             },
             "yonkes": Yonke.objects.all().order_by("nombre"),
-            "categorias": CategoriaPieza.objects.filter(activo=True).order_by("nombre"),
-            "marcas": Marca.objects.filter(activo=True).order_by("nombre"),
+            "categorias": relation_queryset_for_user(CategoriaPieza.objects.filter(activo=True).order_by("nombre"), request.user),
+            "marcas": relation_queryset_for_user(Marca.objects.filter(activo=True).order_by("nombre"), request.user),
             "condicion_choices": Pieza.CONDICION_CHOICES,
             "estatus_choices": Pieza.ESTATUS_CHOICES,
         },

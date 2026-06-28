@@ -14,12 +14,12 @@
 <section class="card section-stack">
   <div class="card-header">
     <h2 class="card-title">Filtros</h2>
-    <a href="/yonkes/nuevo/" class="btn btn-primary">Nuevo yonke</a>
+    {% if can_create_yonke %}<a href="{% url 'yonkes_html:yonkes-create' %}" class="btn btn-primary">Nuevo yonke</a>{% endif %}
   </div>
   <form method="get" class="form-grid">
-    <div class="form-group"><label class="form-label">Nombre o razón social</label><input class="form-control" name="q" value="{{ filters.q }}"></div>
+    <div class="form-group"><label class="form-label">Nombre o razon social</label><input class="form-control" name="q" value="{{ filters.q }}"></div>
     <div class="form-group"><label class="form-label">Estatus</label><select class="form-select" name="estatus"><option value="">Todos</option>{% for value,label in estatus_choices %}<option value="{{ value }}" {% if filters.estatus == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
-    <div class="form-group"><label class="form-label">Mostrar contacto</label><select class="form-select" name="mostrar_contacto"><option value="">Todos</option><option value="true" {% if filters.mostrar_contacto == 'true' %}selected{% endif %}>Sí</option><option value="false" {% if filters.mostrar_contacto == 'false' %}selected{% endif %}>No</option></select></div>
+    <div class="form-group"><label class="form-label">Mostrar contacto</label><select class="form-select" name="mostrar_contacto"><option value="">Todos</option><option value="true" {% if filters.mostrar_contacto == 'true' %}selected{% endif %}>Si</option><option value="false" {% if filters.mostrar_contacto == 'false' %}selected{% endif %}>No</option></select></div>
     <div class="form-group"><label class="form-label">Tel/WhatsApp/Email</label><input class="form-control" name="contacto" value="{{ filters.contacto }}"></div>
     <div class="form-group full-width"><button class="btn btn-primary" type="submit">Filtrar</button></div>
   </form>
@@ -28,8 +28,8 @@
 <section class="card">
   <header class="card-header"><h2 class="card-title">Listado de yonkes</h2></header>
   {% if yonkes %}
-  <div class="table-responsive"><table class="table"><thead><tr><th>Nombre</th><th>Razón social</th><th>Teléfono</th><th>WhatsApp</th><th>Email</th><th>Contacto principal</th><th>Estatus</th><th>Mostrar contacto</th><th>Fecha de creación</th><th>Acciones</th></tr></thead><tbody>
-  {% for y in yonkes %}<tr><td>{{ y.nombre }}</td><td>{{ y.razon_social|default:'—' }}</td><td>{{ y.telefono|default:'—' }}</td><td>{{ y.whatsapp|default:'—' }}</td><td>{{ y.email|default:'—' }}</td><td>{{ y.contacto_principal|default:'—' }}</td><td><span class="badge {% if y.estatus == 'activo' %}badge-success{% elif y.estatus == 'pendiente' %}badge-warning{% elif y.estatus == 'suspendido' or y.estatus == 'dado_de_baja' %}badge-danger{% else %}badge-muted{% endif %}">{{ y.get_estatus_display }}</span></td><td>{{ y.mostrar_contacto|yesno:"Sí,No" }}</td><td>{{ y.creado_en|date:"Y-m-d H:i" }}</td><td><div class="inline-actions"><a class="btn btn-secondary" href="/yonkes/{{ y.id }}/">Ver</a><a class="btn btn-secondary" href="/yonkes/{{ y.id }}/editar/">Editar</a></div></td></tr>{% endfor %}
+  <div class="table-responsive"><table class="table"><thead><tr><th>Nombre</th><th>Razon social</th><th>Telefono</th><th>WhatsApp</th><th>Email</th><th>Contacto principal</th><th>Estatus</th><th>Mostrar contacto</th><th>Fecha de creacion</th><th>Acciones</th></tr></thead><tbody>
+  {% for y in yonkes %}<tr><td>{{ y.nombre }}</td><td>{{ y.razon_social|default:'-' }}</td><td>{% if y.can_view_contact %}{{ y.telefono|default:'-' }}{% else %}<span class="badge badge-muted">Contacto no publico</span>{% endif %}</td><td>{% if y.can_view_contact %}{{ y.whatsapp|default:'-' }}{% else %}<span class="badge badge-muted">Contacto no publico</span>{% endif %}</td><td>{% if y.can_view_contact %}{{ y.email|default:'-' }}{% else %}<span class="badge badge-muted">Contacto no publico</span>{% endif %}</td><td>{% if y.can_view_contact %}{{ y.contacto_principal|default:'-' }}{% else %}<span class="badge badge-muted">Contacto no publico</span>{% endif %}</td><td><span class="badge {% if y.estatus == 'activo' %}badge-success{% elif y.estatus == 'pendiente' %}badge-warning{% elif y.estatus == 'suspendido' or y.estatus == 'dado_de_baja' %}badge-danger{% else %}badge-muted{% endif %}">{{ y.get_estatus_display }}</span></td><td>{{ y.mostrar_contacto|yesno:"Si,No" }}</td><td>{{ y.creado_en|date:"Y-m-d H:i" }}</td><td><div class="inline-actions"><a class="btn btn-secondary" href="{% url 'yonkes_html:yonkes-detail' y.id %}">Ver</a>{% if y.can_edit_yonke %}<a class="btn btn-secondary" href="{% url 'yonkes_html:yonkes-edit' y.id %}">Editar</a>{% endif %}</div></td></tr>{% endfor %}
   </tbody></table></div>
   {% else %}<div class="empty-state">No hay yonkes registrados con esos filtros.</div>{% endif %}
 </section>

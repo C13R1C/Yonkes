@@ -5,10 +5,12 @@ class Marca(models.Model):
     yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="marcas_catalogo")
     nombre = models.CharField(max_length=100, unique=True)
     activo = models.BooleanField(default=True)
+    visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
     class Meta:
         verbose_name = "Marca"
         verbose_name_plural = "Marcas"
+        unique_together = ["yonke", "nombre"]
         ordering = ["nombre"]
 
     def __str__(self):
@@ -20,6 +22,7 @@ class ModeloVehiculo(models.Model):
     marca = models.ForeignKey(Marca, on_delete=models.CASCADE, related_name="modelos")
     nombre = models.CharField(max_length=100)
     activo = models.BooleanField(default=True)
+    visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
     class Meta:
         verbose_name = "Modelo de vehiculo"
@@ -35,10 +38,12 @@ class CategoriaPieza(models.Model):
     yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="categorias_catalogo")
     nombre = models.CharField(max_length=100, unique=True)
     activo = models.BooleanField(default=True)
+    visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
     class Meta:
-        verbose_name = "Categoria de pieza"
-        verbose_name_plural = "Categorias de piezas"
+        verbose_name = "Categoría de pieza"
+        verbose_name_plural = "Categorías de piezas"
+        unique_together = ["yonke", "nombre"]
         ordering = ["nombre"]
 
     def __str__(self):
@@ -50,6 +55,7 @@ class NombrePieza(models.Model):
     nombre_normalizado = models.CharField(max_length=150)
     categoria = models.ForeignKey(CategoriaPieza, on_delete=models.SET_NULL, null=True, blank=True)
     activo = models.BooleanField(default=True)
+    visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
     class Meta:
         verbose_name = "Nombre de pieza"

@@ -1,6 +1,20 @@
-from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.core.exceptions import PermissionDenied
+from django.db.models import Case, IntegerField, Q, Value, When
 from django.shortcuts import get_object_or_404, redirect, render
 
+from apps.accounts.permissions import (
+    can_create_inventory,
+    can_edit_inventory,
+    can_view_sensitive_inventory,
+    inventory_queryset_for_user,
+    is_admin_general,
+    own_yonke_queryset_for_user,
+    user_yonke,
+    yonkes_queryset_for_user,
+)
+from apps.auditoria.services import log_action
 from apps.catalogos.models import CategoriaPieza, Marca, ModeloVehiculo
 from apps.yonkes.models import Yonke
 
@@ -21,8 +35,22 @@ def _pieza_vehiculo_label(pieza):
     return _vehiculo_label(pieza.vehiculo)
 
 
+def _inventory_changes(before, after, fields):
+    changes = {}
+    for field in fields:
+        old = getattr(before, field)
+        new = getattr(after, field)
+        if old != new:
+            changes[field] = {"antes": str(old), "despues": str(new)}
+    return changes
+
+
+@login_required(login_url="/login/")
 def vehiculo_list(request):
-    queryset = Vehiculo.objects.select_related("yonke", "marca", "modelo").order_by("-creado_en", "-id")
+    queryset = inventory_queryset_for_user(
+        Vehiculo.objects.select_related("yonke", "marca", "modelo").order_by("-creado_en", "-id"),
+        request.user,
+    )
 
     q = request.GET.get("q", "").strip()
     yonke = request.GET.get("yonke", "").strip()
@@ -35,7 +63,7 @@ def vehiculo_list(request):
     visibilidad = request.GET.get("visibilidad", "").strip()
 
     if q:
-        queryset = queryset.filter(
+        search_query = (
             Q(marca__nombre__icontains=q)
             | Q(modelo__nombre__icontains=q)
             | Q(marca_texto__icontains=q)
@@ -43,10 +71,10 @@ def vehiculo_list(request):
             | Q(version__icontains=q)
             | Q(motor__icontains=q)
             | Q(transmision__icontains=q)
-            | Q(vin__icontains=q)
-            | Q(numero_serie__icontains=q)
-            | Q(ubicacion_fisica__icontains=q)
         )
+        if is_admin_general(request.user):
+            search_query |= Q(vin__icontains=q) | Q(numero_serie__icontains=q) | Q(ubicacion_fisica__icontains=q)
+        queryset = queryset.filter(search_query)
     if yonke:
         queryset = queryset.filter(yonke_id=yonke)
     if marca:
@@ -64,13 +92,31 @@ def vehiculo_list(request):
     if visibilidad:
         queryset = queryset.filter(visibilidad=visibilidad)
 
+    current_yonke = user_yonke(request.user)
+    if current_yonke and not is_admin_general(request.user):
+        queryset = queryset.annotate(
+            prioridad_yonke=Case(
+                When(yonke=current_yonke, then=0),
+                default=1,
+                output_field=IntegerField(),
+            )
+        ).order_by("prioridad_yonke", "-creado_en", "-id")
+    else:
+        queryset = queryset.annotate(prioridad_yonke=Value(0, output_field=IntegerField())).order_by("-creado_en", "-id")
+
+    vehiculos = list(queryset)
+    for vehiculo_obj in vehiculos:
+        vehiculo_obj.can_edit = can_edit_inventory(request.user, vehiculo_obj)
+        vehiculo_obj.can_view_sensitive = can_view_sensitive_inventory(request.user, vehiculo_obj)
+
     return render(
         request,
         "vehiculos/list.html",
         {
             "active_module": "vehiculos",
-            "vehiculos": queryset,
-            "yonkes": Yonke.objects.all().order_by("nombre"),
+            "vehiculos": vehiculos,
+            "can_create_inventory": can_create_inventory(request.user),
+            "yonkes": yonkes_queryset_for_user(Yonke.objects.all().order_by("nombre"), request.user),
             "marcas": Marca.objects.filter(activo=True).order_by("nombre"),
             "modelos": ModeloVehiculo.objects.filter(activo=True).select_related("marca").order_by("marca__nombre", "nombre"),
             "estatus_choices": Vehiculo.ESTATUS_CHOICES,
@@ -90,8 +136,20 @@ def vehiculo_list(request):
     )
 
 
+@login_required(login_url="/login/")
 def vehiculo_detail(request, pk):
-    vehiculo = get_object_or_404(Vehiculo.objects.select_related("yonke", "marca", "modelo"), pk=pk)
+    vehiculo = get_object_or_404(
+        inventory_queryset_for_user(Vehiculo.objects.select_related("yonke", "marca", "modelo"), request.user),
+        pk=pk,
+    )
+    piezas = inventory_queryset_for_user(
+        vehiculo.piezas.select_related("yonke", "categoria", "nombre_normalizado").order_by("-creado_en", "-id"),
+        request.user,
+    )
+    piezas = list(piezas)
+    for pieza_obj in piezas:
+        pieza_obj.can_edit = can_edit_inventory(request.user, pieza_obj)
+        pieza_obj.can_view_sensitive = can_view_sensitive_inventory(request.user, pieza_obj)
     return render(
         request,
         "vehiculos/detail.html",
@@ -100,24 +158,45 @@ def vehiculo_detail(request, pk):
             "vehiculo": vehiculo,
             "vehiculo_label": _vehiculo_label(vehiculo),
             "piezas_count": vehiculo.piezas.count() if hasattr(vehiculo, "piezas") else None,
+            "piezas": piezas,
+            "can_edit": can_edit_inventory(request.user, vehiculo),
+            "can_add_piece": can_create_inventory(request.user) and can_edit_inventory(request.user, vehiculo),
+            "can_view_sensitive": can_view_sensitive_inventory(request.user, vehiculo),
         },
     )
 
 
+@login_required(login_url="/login/")
 def vehiculo_create(request):
-    form = VehiculoForm(request.POST or None)
+    if not can_create_inventory(request.user):
+        raise PermissionDenied
+    form = VehiculoForm(request.POST or None, request.FILES or None, user=request.user)
     if request.method == "POST" and form.is_valid():
-        vehiculo = form.save()
-        return redirect("vehiculos-detail", pk=vehiculo.pk)
+        vehiculo = form.save(commit=False)
+        vehiculo.creado_por = request.user
+        if not vehiculo.yonke_id:
+            vehiculo.yonke = user_yonke(request.user)
+        vehiculo.save()
+        form.save_m2m()
+        log_action(request, accion="crear_vehiculo", entidad="Vehiculo", entidad_id=vehiculo.pk, yonke=vehiculo.yonke)
+        messages.success(request, "Registro creado correctamente.")
+        return redirect("inventario_html:vehiculos-detail", pk=vehiculo.pk)
     return render(request, "vehiculos/form.html", {"active_module": "vehiculos", "form": form, "is_edit": False})
 
 
+@login_required(login_url="/login/")
 def vehiculo_edit(request, pk):
     vehiculo = get_object_or_404(Vehiculo, pk=pk)
-    form = VehiculoForm(request.POST or None, instance=vehiculo)
+    if not can_edit_inventory(request.user, vehiculo):
+        raise PermissionDenied
+    before = Vehiculo.objects.get(pk=pk)
+    form = VehiculoForm(request.POST or None, request.FILES or None, instance=vehiculo, user=request.user)
     if request.method == "POST" and form.is_valid():
         vehiculo = form.save()
-        return redirect("vehiculos-detail", pk=vehiculo.pk)
+        changes = _inventory_changes(before, vehiculo, ["estatus", "visibilidad"])
+        log_action(request, accion="editar_vehiculo", entidad="Vehiculo", entidad_id=vehiculo.pk, yonke=vehiculo.yonke, cambios=changes)
+        messages.success(request, "Registro actualizado correctamente.")
+        return redirect("inventario_html:vehiculos-detail", pk=vehiculo.pk)
     return render(
         request,
         "vehiculos/form.html",
@@ -131,10 +210,14 @@ def vehiculo_edit(request, pk):
     )
 
 
+@login_required(login_url="/login/")
 def pieza_list(request):
-    queryset = Pieza.objects.select_related(
-        "yonke", "vehiculo", "vehiculo__marca", "vehiculo__modelo", "categoria", "nombre_normalizado"
-    ).order_by("-creado_en", "-id")
+    queryset = inventory_queryset_for_user(
+        Pieza.objects.select_related(
+            "yonke", "vehiculo", "vehiculo__marca", "vehiculo__modelo", "categoria", "nombre_normalizado"
+        ).order_by("-creado_en", "-id"),
+        request.user,
+    )
 
     q = request.GET.get("q", "").strip()
     yonke = request.GET.get("yonke", "").strip()
@@ -148,13 +231,14 @@ def pieza_list(request):
     anio = request.GET.get("anio", "").strip()
 
     if q:
-        queryset = queryset.filter(
+        search_query = (
             Q(nombre__icontains=q)
             | Q(nombre_normalizado__nombre_normalizado__icontains=q)
             | Q(alias_local__icontains=q)
-            | Q(ubicacion__icontains=q)
-            | Q(observaciones__icontains=q)
         )
+        if is_admin_general(request.user):
+            search_query |= Q(ubicacion__icontains=q) | Q(observaciones__icontains=q)
+        queryset = queryset.filter(search_query)
     if yonke:
         queryset = queryset.filter(yonke_id=yonke)
     if vehiculo:
@@ -174,14 +258,32 @@ def pieza_list(request):
     if anio:
         queryset = queryset.filter(Q(anio_inicio__lte=anio) & (Q(anio_fin__gte=anio) | Q(anio_fin__isnull=True)))
 
+    current_yonke = user_yonke(request.user)
+    if current_yonke and not is_admin_general(request.user):
+        queryset = queryset.annotate(
+            prioridad_yonke=Case(
+                When(yonke=current_yonke, then=0),
+                default=1,
+                output_field=IntegerField(),
+            )
+        ).order_by("prioridad_yonke", "-creado_en", "-id")
+    else:
+        queryset = queryset.annotate(prioridad_yonke=Value(0, output_field=IntegerField())).order_by("-creado_en", "-id")
+
+    piezas = list(queryset)
+    for pieza_obj in piezas:
+        pieza_obj.can_edit = can_edit_inventory(request.user, pieza_obj)
+        pieza_obj.can_view_sensitive = can_view_sensitive_inventory(request.user, pieza_obj)
+
     return render(
         request,
         "piezas/list.html",
         {
             "active_module": "piezas",
-            "piezas": queryset,
-            "yonkes": Yonke.objects.all().order_by("nombre"),
-            "vehiculos": Vehiculo.objects.select_related("marca", "modelo").order_by("-creado_en")[:500],
+            "piezas": piezas,
+            "can_create_inventory": can_create_inventory(request.user),
+            "yonkes": yonkes_queryset_for_user(Yonke.objects.all().order_by("nombre"), request.user),
+            "vehiculos": own_yonke_queryset_for_user(Vehiculo.objects.select_related("marca", "modelo").order_by("-creado_en"), request.user)[:500],
             "categorias": CategoriaPieza.objects.filter(activo=True).order_by("nombre"),
             "condicion_choices": Pieza.CONDICION_CHOICES,
             "estatus_choices": Pieza.ESTATUS_CHOICES,
@@ -202,17 +304,21 @@ def pieza_list(request):
     )
 
 
+@login_required(login_url="/login/")
 def pieza_detail(request, pk):
     pieza = get_object_or_404(
-        Pieza.objects.select_related(
-            "yonke",
-            "vehiculo",
-            "vehiculo__marca",
-            "vehiculo__modelo",
-            "categoria",
-            "nombre_normalizado",
-            "marca_compatible",
-            "modelo_compatible",
+        inventory_queryset_for_user(
+            Pieza.objects.select_related(
+                "yonke",
+                "vehiculo",
+                "vehiculo__marca",
+                "vehiculo__modelo",
+                "categoria",
+                "nombre_normalizado",
+                "marca_compatible",
+                "modelo_compatible",
+            ),
+            request.user,
         ),
         pk=pk,
     )
@@ -223,24 +329,61 @@ def pieza_detail(request, pk):
             "active_module": "piezas",
             "pieza": pieza,
             "vehiculo_label": _pieza_vehiculo_label(pieza),
+            "can_edit": can_edit_inventory(request.user, pieza),
+            "can_view_sensitive": can_view_sensitive_inventory(request.user, pieza),
         },
     )
 
 
+@login_required(login_url="/login/")
 def pieza_create(request):
-    form = PiezaForm(request.POST or None)
+    if not can_create_inventory(request.user):
+        raise PermissionDenied
+    vehiculo_context_id = request.GET.get("vehiculo") or request.POST.get("vehiculo_context")
+    vehiculo_context = None
+    initial = {}
+    if vehiculo_context_id:
+        vehiculo_context = get_object_or_404(Vehiculo.objects.select_related("yonke"), pk=vehiculo_context_id)
+        if not can_edit_inventory(request.user, vehiculo_context):
+            raise PermissionDenied
+        initial = {"vehiculo": vehiculo_context, "yonke": vehiculo_context.yonke}
+
+    form = PiezaForm(request.POST or None, request.FILES or None, user=request.user, initial=initial)
     if request.method == "POST" and form.is_valid():
-        pieza = form.save()
-        return redirect("piezas-detail", pk=pieza.pk)
-    return render(request, "piezas/form.html", {"active_module": "piezas", "form": form, "is_edit": False})
+        pieza = form.save(commit=False)
+        pieza.creado_por = request.user
+        if vehiculo_context:
+            pieza.vehiculo = vehiculo_context
+            pieza.yonke = vehiculo_context.yonke
+        if not pieza.yonke_id:
+            pieza.yonke = user_yonke(request.user)
+        pieza.save()
+        form.save_m2m()
+        log_action(request, accion="crear_pieza", entidad="Pieza", entidad_id=pieza.pk, yonke=pieza.yonke)
+        messages.success(request, "Registro creado correctamente.")
+        if vehiculo_context:
+            return redirect("inventario_html:vehiculos-detail", pk=vehiculo_context.pk)
+        return redirect("inventario_html:piezas-detail", pk=pieza.pk)
+    return render(
+        request,
+        "piezas/form.html",
+        {"active_module": "piezas", "form": form, "is_edit": False, "vehiculo_context": vehiculo_context},
+    )
 
 
+@login_required(login_url="/login/")
 def pieza_edit(request, pk):
     pieza = get_object_or_404(Pieza, pk=pk)
-    form = PiezaForm(request.POST or None, instance=pieza)
+    if not can_edit_inventory(request.user, pieza):
+        raise PermissionDenied
+    before = Pieza.objects.get(pk=pk)
+    form = PiezaForm(request.POST or None, request.FILES or None, instance=pieza, user=request.user)
     if request.method == "POST" and form.is_valid():
         pieza = form.save()
-        return redirect("piezas-detail", pk=pieza.pk)
+        changes = _inventory_changes(before, pieza, ["estatus", "visibilidad", "precio", "precio_visible"])
+        log_action(request, accion="editar_pieza", entidad="Pieza", entidad_id=pieza.pk, yonke=pieza.yonke, cambios=changes)
+        messages.success(request, "Registro actualizado correctamente.")
+        return redirect("inventario_html:piezas-detail", pk=pieza.pk)
     return render(
         request,
         "piezas/form.html",

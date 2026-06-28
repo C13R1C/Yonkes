@@ -1,28 +1,31 @@
 {% extends "layout/base.html" %}
-{% block title %}Vehículos | Red de Yonkes{% endblock %}
-{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><span>Vehículos</span>{% endblock %}
-{% block page_title %}<h1>Vehículos</h1>{% endblock %}
+{% block title %}Vehiculos | Red de Yonkes{% endblock %}
+{% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><span>Vehiculos</span>{% endblock %}
+{% block page_title %}<h1>Vehiculos</h1>{% endblock %}
 {% block content %}
 <section class="card section-stack">
-  <div class="card-header"><h2 class="card-title">Filtros</h2><a href="{% url 'vehiculos-create' %}" class="btn btn-primary">Nuevo vehículo</a></div>
+  <div class="card-header">
+    <h2 class="card-title">Filtros</h2>
+    {% if can_create_inventory %}<a href="{% url 'inventario_html:vehiculos-create' %}" class="btn btn-primary">Nuevo vehiculo</a>{% endif %}
+  </div>
   <form method="get" class="form-grid">
-    <div class="form-group full-width"><label class="form-label">Búsqueda general</label><input class="form-control" name="q" value="{{ filters.q }}" placeholder="Marca, modelo, versión, VIN, ubicación..."></div>
+    <div class="form-group full-width"><label class="form-label">Busqueda general</label><input class="form-control" name="q" value="{{ filters.q }}" placeholder="Marca, modelo, version..."></div>
     <div class="form-group"><label class="form-label">Yonke</label><select class="form-select" name="yonke"><option value="">Todos</option>{% for y in yonkes %}<option value="{{ y.id }}" {% if filters.yonke == y.id|stringformat:'s' %}selected{% endif %}>{{ y.nombre }}</option>{% endfor %}</select></div>
     <div class="form-group"><label class="form-label">Marca</label><select class="form-select" name="marca"><option value="">Todas</option>{% for m in marcas %}<option value="{{ m.id }}" {% if filters.marca == m.id|stringformat:'s' %}selected{% endif %}>{{ m.nombre }}</option>{% endfor %}</select></div>
     <div class="form-group"><label class="form-label">Modelo</label><select class="form-select" name="modelo"><option value="">Todos</option>{% for mo in modelos %}<option value="{{ mo.id }}" {% if filters.modelo == mo.id|stringformat:'s' %}selected{% endif %}>{{ mo.marca.nombre }} {{ mo.nombre }}</option>{% endfor %}</select></div>
-    <div class="form-group"><label class="form-label">Año exacto</label><input class="form-control" name="anio" value="{{ filters.anio }}" type="number"></div>
-    <div class="form-group"><label class="form-label">Año mínimo</label><input class="form-control" name="anio_min" value="{{ filters.anio_min }}" type="number"></div>
-    <div class="form-group"><label class="form-label">Año máximo</label><input class="form-control" name="anio_max" value="{{ filters.anio_max }}" type="number"></div>
+    <div class="form-group"><label class="form-label">Anio exacto</label><input class="form-control" name="anio" value="{{ filters.anio }}" type="number"></div>
+    <div class="form-group"><label class="form-label">Anio minimo</label><input class="form-control" name="anio_min" value="{{ filters.anio_min }}" type="number"></div>
+    <div class="form-group"><label class="form-label">Anio maximo</label><input class="form-control" name="anio_max" value="{{ filters.anio_max }}" type="number"></div>
     <div class="form-group"><label class="form-label">Estatus</label><select class="form-select" name="estatus"><option value="">Todos</option>{% for value,label in estatus_choices %}<option value="{{ value }}" {% if filters.estatus == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
     <div class="form-group"><label class="form-label">Visibilidad</label><select class="form-select" name="visibilidad"><option value="">Todas</option>{% for value,label in visibilidad_choices %}<option value="{{ value }}" {% if filters.visibilidad == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
-    <div class="form-group full-width inline-actions"><button class="btn btn-primary" type="submit">Filtrar</button><a href="{% url 'vehiculos-list' %}" class="btn btn-secondary">Limpiar</a></div>
+    <div class="form-group full-width inline-actions"><button class="btn btn-primary" type="submit">Filtrar</button><a href="{% url 'inventario_html:vehiculos-list' %}" class="btn btn-secondary">Limpiar</a></div>
   </form>
 </section>
-<section class="card"><header class="card-header"><h2 class="card-title">Listado de vehículos</h2></header>
+<section class="card"><header class="card-header"><h2 class="card-title">Listado de vehiculos</h2></header>
 {% if vehiculos %}
-<div class="table-responsive"><table class="table"><thead><tr><th>Yonke</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Versión</th><th>Motor</th><th>Transmisión</th><th>VIN</th><th>Estatus</th><th>Visibilidad</th><th>Fecha de creación</th><th>Acciones</th></tr></thead><tbody>
-{% for v in vehiculos %}<tr><td>{{ v.yonke.nombre }}</td><td>{{ v.marca.nombre|default:v.marca_texto|default:'—' }}</td><td>{{ v.modelo.nombre|default:v.modelo_texto|default:'—' }}</td><td>{{ v.anio|default:'—' }}</td><td>{{ v.version|default:'—' }}</td><td>{{ v.motor|default:'—' }}</td><td>{{ v.transmision|default:'—' }}</td><td>{{ v.vin|default:'—' }}</td><td><span class="badge {% if v.estatus == 'disponible' %}badge-success{% elif v.estatus == 'en_revision' or v.estatus == 'en_desarme' or v.estatus == 'parcialmente_desarmado' or v.estatus == 'en_revision_legal' %}badge-warning{% elif v.estatus == 'dado_de_baja' or v.estatus == 'bloqueado' %}badge-danger{% else %}badge-muted{% endif %}">{{ v.get_estatus_display }}</span></td><td><span class="badge {% if v.visibilidad == 'visible' %}badge-success{% elif v.visibilidad == 'oculto' %}badge-warning{% elif v.visibilidad == 'bloqueado' %}badge-danger{% else %}badge-muted{% endif %}">{{ v.get_visibilidad_display }}</span></td><td>{{ v.creado_en|date:"Y-m-d H:i" }}</td><td><div class="inline-actions"><a class="btn btn-secondary" href="{% url 'vehiculos-detail' v.id %}">Ver</a><a class="btn btn-secondary" href="{% url 'vehiculos-edit' v.id %}">Editar</a></div></td></tr>{% endfor %}
+<div class="table-responsive"><table class="table"><thead><tr><th>Yonke</th><th>Imagen</th><th>Marca</th><th>Modelo</th><th>Anio</th><th>Estatus</th><th>Visibilidad</th><th>Fecha de creacion</th><th>Acciones</th></tr></thead><tbody>
+{% for v in vehiculos %}<tr><td>{{ v.yonke.nombre }}</td><td>{% if v.imagen_principal %}<img class="media-thumb" src="{{ v.imagen_principal.url }}" alt="{{ v }}">{% else %}<span class="media-thumb media-placeholder">Sin imagen</span>{% endif %}</td><td><span class="media-cell">{% if v.marca.logo %}<img class="brand-logo" src="{{ v.marca.logo.url }}" alt="{{ v.marca.nombre }}">{% endif %}{{ v.marca.nombre|default:v.marca_texto|default:'-' }}</span></td><td>{{ v.modelo.nombre|default:v.modelo_texto|default:'-' }}</td><td>{{ v.anio|default:'-' }}</td><td><span class="badge {% if v.estatus == 'disponible' %}badge-success{% elif v.estatus == 'en_revision' or v.estatus == 'en_desarme' or v.estatus == 'parcialmente_desarmado' or v.estatus == 'en_revision_legal' %}badge-warning{% elif v.estatus == 'dado_de_baja' or v.estatus == 'bloqueado' %}badge-danger{% else %}badge-muted{% endif %}">{{ v.get_estatus_display }}</span></td><td><span class="badge {% if v.visibilidad == 'visible' %}badge-success{% elif v.visibilidad == 'oculto' %}badge-warning{% elif v.visibilidad == 'bloqueado' %}badge-danger{% else %}badge-muted{% endif %}">{{ v.get_visibilidad_display }}</span></td><td>{{ v.creado_en|date:"Y-m-d H:i" }}</td><td><div class="inline-actions"><a class="btn btn-secondary" href="{% url 'inventario_html:vehiculos-detail' v.id %}">Ver</a>{% if v.can_edit %}<a class="btn btn-secondary" href="{% url 'inventario_html:vehiculos-edit' v.id %}">Editar</a>{% endif %}</div></td></tr>{% endfor %}
 </tbody></table></div>
-{% else %}<div class="empty-state">No hay vehículos registrados con esos filtros.</div>{% endif %}
+{% else %}<div class="empty-state">No se encontraron resultados.</div>{% endif %}
 </section>
 {% endblock %}

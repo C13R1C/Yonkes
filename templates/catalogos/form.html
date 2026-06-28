@@ -3,9 +3,14 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/catalogos/">Catálogos</a><span>/</span><a href="/catalogos/{{ slug }}/">{{ title }}</a><span>/</span><span>{% if is_edit %}Editar{% else %}Nuevo{% endif %}</span>{% endblock %}
 {% block page_title %}<h1>{% if is_edit %}Editar{% else %}Nuevo{% endif %} {{ title }}</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack"><form method="post" class="form-grid">{% csrf_token %}
-{% if form.non_field_errors %}<div class="form-errors full-width">{{ form.non_field_errors }}</div>{% endif %}
-{% for field in form %}<div class="form-group full-width"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endfor %}
-<div class="form-group full-width inline-actions"><a class="btn btn-secondary" href="/catalogos/{{ slug }}/">Cancelar</a><button class="btn btn-primary" type="submit">Guardar</button></div>
-</form></section>
+<section class="card section-stack">
+  {% if slug == "marcas" and object %}
+  <div>{% if object.logo %}<img class="brand-logo catalog-logo" src="{{ object.logo.url }}" alt="{{ object.nombre }}">{% else %}<span class="brand-logo catalog-logo media-placeholder">Sin logo</span>{% endif %}</div>
+  {% endif %}
+  <form method="post" enctype="multipart/form-data" class="form-grid">{% csrf_token %}
+    {% if form.non_field_errors %}<div class="form-errors full-width">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}<div class="form-group full-width"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endfor %}
+    <div class="form-group full-width inline-actions"><a class="btn btn-secondary" href="/catalogos/{{ slug }}/">Regresar</a><button class="btn btn-primary" type="submit">Guardar</button></div>
+  </form>
+</section>
 {% endblock %}

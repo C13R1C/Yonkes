@@ -2,6 +2,8 @@ from django.urls import path
 
 from . import html_views
 
+app_name = "yonkes_html"
+
 urlpatterns = [
     path("yonkes/", html_views.yonke_list, name="yonkes-list"),
     path("yonkes/nuevo/", html_views.yonke_create, name="yonkes-create"),

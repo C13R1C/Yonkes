@@ -3,12 +3,14 @@ from django.shortcuts import get_object_or_404, render
 
 from django.contrib.auth import get_user_model
 from apps.yonkes.models import Yonke
+from apps.accounts.permissions import require_admin_area
 
 from .models import AuditLog
 
 User = get_user_model()
 
 
+@require_admin_area
 def auditoria_list(request):
     q = request.GET.get("q", "").strip()
     usuario = request.GET.get("usuario", "").strip()
@@ -62,6 +64,7 @@ def auditoria_list(request):
     )
 
 
+@require_admin_area
 def auditoria_detail(request, pk):
     log = get_object_or_404(AuditLog.objects.select_related("usuario", "yonke"), pk=pk)
     return render(

@@ -1,8 +1,24 @@
 from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
+from django.utils.text import slugify
 
 from apps.yonkes.models import Yonke
 from apps.catalogos.models import Marca, ModeloVehiculo, CategoriaPieza, NombrePieza, AliasPieza
 from apps.inventario.models import Vehiculo, Pieza
+
+
+PLACEHOLDER_GIF = (
+    b"GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00ccc,"
+    b"\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;"
+)
+
+
+def set_placeholder_image(instance, field_name, label):
+    field = getattr(instance, field_name)
+    if field:
+        return
+    filename = f"{slugify(label) or 'inventario'}.gif"
+    field.save(filename, ContentFile(PLACEHOLDER_GIF), save=True)
 
 
 def get_admin_user():
@@ -18,7 +34,7 @@ def run():
             "nombre": "Yonke Norte",
             "telefono": "656-100-0001",
             "whatsapp": "6561000001",
-            "email": "contacto@yonkenorte.demo",
+            "email": "contacto@yonkenorte.mx",
             "direccion": "Av. Tecnologico, Ciudad Juarez",
             "contacto_principal": "Encargado Norte",
             "estatus": "activo",
@@ -27,7 +43,7 @@ def run():
             "nombre": "Yonke Rio Bravo",
             "telefono": "656-100-0002",
             "whatsapp": "6561000002",
-            "email": "contacto@yonkeriobravo.demo",
+            "email": "contacto@yonkeriobravo.mx",
             "direccion": "Zona Rio Bravo, Ciudad Juarez",
             "contacto_principal": "Encargado Rio Bravo",
             "estatus": "activo",
@@ -36,7 +52,7 @@ def run():
             "nombre": "Yonke Central",
             "telefono": "656-100-0003",
             "whatsapp": "6561000003",
-            "email": "contacto@yonkecentral.demo",
+            "email": "contacto@yonkecentral.mx",
             "direccion": "Centro, Ciudad Juarez",
             "contacto_principal": "Encargado Central",
             "estatus": "activo",
@@ -45,7 +61,7 @@ def run():
             "nombre": "Yonke Frontera",
             "telefono": "656-100-0004",
             "whatsapp": "6561000004",
-            "email": "contacto@yonkefrontera.demo",
+            "email": "contacto@yonkefrontera.mx",
             "direccion": "Zona Frontera, Ciudad Juarez",
             "contacto_principal": "Encargado Frontera",
             "estatus": "activo",
@@ -61,6 +77,7 @@ def run():
     marcas = {}
     for nombre in marcas_nombres:
         marca, _ = Marca.objects.get_or_create(nombre=nombre)
+        set_placeholder_image(marca, "logo", nombre)
         marcas[nombre] = marca
 
     modelos_data = [
@@ -150,13 +167,14 @@ def run():
                 "ubicacion_fisica": ubicacion,
                 "estatus": "en_desarme",
                 "visibilidad": "visible",
-                "observaciones": "Vehiculo demo sin datos sensibles reales.",
+                "observaciones": "Registro base para presentacion del MVP.",
                 "creado_por": admin_user,
             },
         )
+        set_placeholder_image(vehiculo, "imagen_principal", f"{marca_nombre}-{modelo_nombre}-{anio}")
         vehiculos.append(vehiculo)
 
-    piezas_demo = [
+    piezas_iniciales = [
         ("motor", "Yonke Norte", "Nissan", "Sentra", 2016, 1, 12500, True, "usada", "disponible", vehiculos[0]),
         ("alternador", "Yonke Norte", "Nissan", "Sentra", 2016, 2, 1200, True, "usada", "disponible", vehiculos[0]),
         ("transmision", "Yonke Rio Bravo", "Chevrolet", "Silverado", 2014, 1, 18500, False, "usada", "disponible", vehiculos[1]),
@@ -169,8 +187,8 @@ def run():
         ("retrovisor", "Yonke Norte", "Nissan", "Sentra", 2016, 4, 450, True, "usada", "disponible", None),
     ]
 
-    for pieza_nombre, yonke_nombre, marca_nombre, modelo_nombre, anio, cantidad, precio, precio_visible, condicion, estatus, vehiculo in piezas_demo:
-        Pieza.objects.get_or_create(
+    for pieza_nombre, yonke_nombre, marca_nombre, modelo_nombre, anio, cantidad, precio, precio_visible, condicion, estatus, vehiculo in piezas_iniciales:
+        pieza, _ = Pieza.objects.get_or_create(
             yonke=yonkes[yonke_nombre],
             nombre=pieza_nombre,
             marca_texto=marca_nombre,
@@ -189,13 +207,14 @@ def run():
                 "condicion": condicion,
                 "estatus": estatus,
                 "visibilidad": "visible",
-                "ubicacion": "ubicacion demo",
-                "observaciones": "Pieza demo para presentacion del MVP.",
+                "ubicacion": "Area de inventario",
+                "observaciones": "Registro base para presentacion del MVP.",
                 "creado_por": admin_user,
             },
         )
+        set_placeholder_image(pieza, "imagen_principal", f"{pieza_nombre}-{marca_nombre}-{modelo_nombre}")
 
-    print("Datos demo cargados correctamente.")
+    print("Datos iniciales cargados correctamente.")
     print("Yonkes creados:", Yonke.objects.count())
     print("Marcas creadas:", Marca.objects.count())
     print("Vehiculos creados:", Vehiculo.objects.count())

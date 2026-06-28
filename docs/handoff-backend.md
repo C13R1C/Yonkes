@@ -11,7 +11,7 @@ Incluye:
 - Admin de Django activo.
 - Modelos principales creados.
 - Migraciones aplicadas.
-- Datos demo cargados.
+- Datos iniciales cargados.
 - API REST basica funcionando.
 - Busqueda de piezas funcionando.
 - Catalogos base funcionando.
@@ -122,7 +122,7 @@ python manage.py migrate
 Crear superusuario:
 python manage.py createsuperuser
 
-Cargar datos demo:
+Cargar datos iniciales:
 python manage.py shell -c "exec(open('scripts/seed_demo_data.py', encoding='utf-8').read()); run()"
 
 Correr servidor:
@@ -144,7 +144,7 @@ http://127.0.0.1:8000/admin/
 7. Migrar de SQLite a PostgreSQL en etapa posterior.
 8. Documentar contrato final de API.
 9. Revisar seguridad antes de cualquier despliegue.
-10. Evitar uso de datos reales sensibles en demo.
+10. Evitar uso de datos reales sensibles en validacion local.
 
 ## Restricciones
 
@@ -163,13 +163,13 @@ No construir todavia:
 
 ## Estado de entrega
 
-Backend base funcional para demo local.
+Backend base funcional para validacion local.
 
 Incluye:
 
 - Admin funcional.
 - API REST basica.
-- Datos demo.
+- Datos iniciales.
 - Inventario consultable.
 - Busqueda de piezas.
 

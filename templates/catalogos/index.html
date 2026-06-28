@@ -8,7 +8,7 @@
 <article class="card">
   <div class="card-header"><h2 class="card-title">{{ card.title }}</h2><span class="badge badge-info">{{ card.total }}</span></div>
   <p>{{ card.description }}</p>
-  <a class="btn btn-primary" href="/catalogos/{{ card.slug }}/">Administrar</a>
+  <a class="btn btn-primary" href="/catalogos/{{ card.slug }}/">{% if is_catalog_read_only %}Consultar{% else %}Administrar{% endif %}</a>
 </article>
 {% endfor %}
 </section>

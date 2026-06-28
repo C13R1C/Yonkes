@@ -43,6 +43,7 @@
                     <table class="table">
                         <thead>
                             <tr>
+                                <th>Imagen</th>
                                 <th>Pieza</th>
                                 <th>Yonke</th>
                                 <th>Estatus</th>
@@ -53,6 +54,7 @@
                         <tbody>
                             {% for pieza in ultimas_piezas %}
                                 <tr>
+                                    <td>{% if pieza.imagen_principal %}<img class="media-thumb" src="{{ pieza.imagen_principal.url }}" alt="{{ pieza.nombre }}">{% elif pieza.vehiculo and pieza.vehiculo.imagen_principal %}<img class="media-thumb" src="{{ pieza.vehiculo.imagen_principal.url }}" alt="{{ pieza.vehiculo }}">{% else %}<span class="media-thumb media-placeholder">Sin imagen</span>{% endif %}</td>
                                     <td>{{ pieza.nombre|default:"Sin nombre" }}</td>
                                     <td>{{ pieza.yonke.nombre|default:"Sin yonke" }}</td>
                                     <td>
@@ -61,10 +63,14 @@
                                         </span>
                                     </td>
                                     <td>
-                                        {% if pieza.precio %}
-                                            ${{ pieza.precio }}
+                                        {% if pieza.can_view_sensitive or pieza.precio_visible %}
+                                            {% if pieza.precio %}
+                                                ${{ pieza.precio }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
                                         {% else %}
-                                            —
+                                            Precio no visible
                                         {% endif %}
                                     </td>
                                     <td>{{ pieza.creado_en|date:"Y-m-d H:i"|default:"—" }}</td>

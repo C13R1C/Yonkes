@@ -4,6 +4,9 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from apps.accounts.permissions import is_admin_general, user_yonke
+from apps.yonkes.models import Yonke
+
 from .forms import AliasPiezaForm, CategoriaPiezaForm, MarcaForm, ModeloVehiculoForm, NombrePiezaForm
 from .models import AliasPieza, CategoriaPieza, Marca, ModeloVehiculo, NombrePieza
 from .permissions import can_access_catalogs, can_manage_catalog_record, scope_catalog_queryset
@@ -43,7 +46,15 @@ def _safe_delete_or_deactivate(obj):
     obj.delete()
     return "deleted"
 
+def _catalog_queryset(model, user, selected_yonke=""):
+    return catalog_queryset_for_user(model.objects.all(), user, selected_yonke=selected_yonke, include_alias_shared=(model is not AliasPieza))
 
+
+def _can_edit_row(user, obj):
+    return can_edit_catalog_item(user, obj)
+
+
+@login_required(login_url="/login/")
 def index(request):
     _ensure_catalog_access(request)
     cards = []
@@ -93,8 +104,6 @@ def _catalog_form(request, *, model, form_class, slug, title, pk=None):
         obj.save()
         form.save_m2m()
         return redirect(f"catalogos-{slug}-list")
-    return render(request, "catalogos/form.html", {"active_module": "catalogos", "title": title, "slug": slug, "form": form, "is_edit": bool(pk)})
-
 
 @require_POST
 def _catalog_delete(request, *, model, slug):
