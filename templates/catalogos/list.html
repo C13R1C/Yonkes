@@ -3,38 +3,16 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/catalogos/">Catálogos</a><span>/</span><span>{{ title }}</span>{% endblock %}
 {% block page_title %}<h1>{{ title }}</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack">
-  <div class="card-header">
-    <h2 class="card-title">Filtros</h2>
-    <div class="inline-actions">
-      <a class="btn btn-secondary" href="/catalogos/">Regresar</a>
-      {% if can_create %}<a class="btn btn-primary" href="/catalogos/{{ slug }}/nuevo/">Nuevo</a>{% endif %}
-    </div>
-  </div>
-  <form method="get" class="form-grid">
-    <div class="form-group full-width"><label class="form-label">Buscar</label><input class="form-control" name="q" value="{{ q }}"></div>
-    {% if catalog_can_filter_yonke %}
-    <div class="form-group full-width"><label class="form-label">Yonke propietario</label><select class="form-select" name="yonke"><option value="">Todos</option><option value="global" {% if selected_yonke == "global" %}selected{% endif %}>Global</option>{% for y in yonkes %}<option value="{{ y.id }}" {% if selected_yonke == y.id|stringformat:'s' %}selected{% endif %}>{{ y.nombre }}</option>{% endfor %}</select></div>
-    {% endif %}
-    <div class="form-group full-width inline-actions"><button class="btn btn-primary" type="submit">Filtrar</button><a class="btn btn-secondary" href="/catalogos/{{ slug }}/">Limpiar</a></div>
-  </form>
-</section>
-<section class="card">
-<header class="card-header"><h2 class="card-title">Listado</h2><div class="inline-actions"><span class="badge badge-info">{{ total_registros }} registros</span>{% if is_catalog_read_only %}<span class="badge badge-muted">{{ duplicate_count }} duplicados</span>{% endif %}</div></header>
-{% if rows %}
-<div class="table-responsive"><table class="table"><thead><tr>{% if slug == "marcas" %}<th>Logo</th>{% endif %}<th>Registro</th><th>Alcance</th><th>Yonke propietario</th><th>Visibilidad</th><th>Activo</th><th>Acciones</th></tr></thead><tbody>
-{% for r in rows %}
-<tr>
-  {% if slug == "marcas" %}<td>{% if r.logo %}<img class="brand-logo catalog-logo" src="{{ r.logo.url }}" alt="{{ r.nombre }}">{% else %}<span class="brand-logo catalog-logo media-placeholder">Sin logo</span>{% endif %}</td>{% endif %}
-  <td>{{ r }}{% if is_catalog_read_only and r.is_duplicate_catalog %} <span class="badge badge-warning">Duplicado</span>{% endif %}</td>
-  <td><span class="badge badge-info">{{ r.scope_label }}</span></td>
-  <td>{{ r.owner_label }}</td>
-  <td>{{ r.get_visibilidad_display|default:"-" }}</td>
-  <td>{% if r.activo is not None %}{{ r.activo|yesno:"Sí,No" }}{% else %}-{% endif %}</td>
-  <td>{% if r.can_edit_catalog %}<a class="btn btn-secondary" href="/catalogos/{{ slug }}/{{ r.id }}/editar/">Editar</a>{% else %}<span class="badge badge-muted">Solo lectura</span>{% endif %}</td>
-</tr>
-{% endfor %}
-</tbody></table></div>
-{% else %}<div class="empty-state">No se encontraron resultados.</div>{% endif %}
-</section>
+<div class="card">
+  <div class="card-header"><h2 class="card-title">Filtros</h2><a class="btn btn-primary" href="/catalogos/{{ slug }}/nuevo/">Nuevo</a></div>
+  <form method="get" class="form-grid"><div class="form-group full-width"><label class="form-label">Buscar</label><input class="form-control" name="q" value="{{ q }}"></div><div class="form-group full-width inline-actions"><button class="btn btn-primary" type="submit">Filtrar</button><a class="btn btn-secondary" href="/catalogos/{{ slug }}/">Limpiar</a></div></form>
+</div>
+<div class="card">
+  <div class="card-header"><h2 class="card-title">Registros</h2></div>
+  <div class="table-responsive"><table class="table"><thead><tr><th>Registro</th><th>Activo</th><th>Acciones</th></tr></thead><tbody>
+  {% for r in rows %}
+  <tr><td>{{ r }}</td><td>{% if r.activo is not None %}{{ r.activo|yesno:"Sí,No" }}{% else %}—{% endif %}</td><td class="inline-actions"><a class="btn btn-secondary" href="/catalogos/{{ slug }}/{{ r.id }}/editar/">Editar</a>{% if r.can_delete %}<form method="post" action="/catalogos/{{ slug }}/{{ r.id }}/eliminar/" onsubmit="return confirm('¿Seguro que deseas eliminar este registro? Si está en uso, será desactivado para no afectar inventario existente.');">{% csrf_token %}<button class="btn btn-danger" type="submit">Eliminar</button></form>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="3">Sin registros.</td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
 {% endblock %}

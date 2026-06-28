@@ -160,42 +160,4 @@ class NombrePiezaForm(BaseStyledModelForm):
 class AliasPiezaForm(BaseStyledModelForm):
     class Meta:
         model = AliasPieza
-        fields = ["yonke", "nombre_pieza", "alias", "visibilidad"]
-        labels = {"yonke": "Yonke", "nombre_pieza": "Nombre de pieza", "alias": "Alias", "visibilidad": "Visibilidad"}
-
-    def _configure_yonke_field(self):
-        super()._configure_yonke_field()
-        if is_admin_general(self.user) and "yonke" in self.fields:
-            self.fields["yonke"].help_text = "Los alias no son globales; CANACO solo los consulta."
-
-    def __init__(self, *args, user=None, **kwargs):
-        super().__init__(*args, user=user, **kwargs)
-        if is_admin_general(user):
-            self.fields["nombre_pieza"].queryset = NombrePieza.objects.none()
-        else:
-            self.fields["nombre_pieza"].queryset = relation_queryset_for_user(NombrePieza.objects.filter(activo=True).order_by("nombre_normalizado"), user)
-
-    def clean_yonke(self):
-        if is_admin_general(self.user):
-            raise forms.ValidationError("Los alias de pieza deben pertenecer a un yonke.")
-        return user_yonke(self.user)
-
-    def clean_nombre_pieza(self):
-        nombre_pieza = self.cleaned_data.get("nombre_pieza")
-        if nombre_pieza and not relation_queryset_for_user(NombrePieza.objects.filter(pk=nombre_pieza.pk), self.user).exists():
-            raise forms.ValidationError("No puedes usar nombres de pieza fuera de tu alcance permitido.")
-        return nombre_pieza
-
-    def clean_alias(self):
-        alias = self.cleaned_data.get("alias")
-        nombre_pieza = self.cleaned_data.get("nombre_pieza")
-        if alias and nombre_pieza and _normalized_duplicate_exists(
-            AliasPieza,
-            "alias",
-            alias,
-            yonke=user_yonke(self.user),
-            instance=self.instance,
-            extra_q=Q(nombre_pieza=nombre_pieza),
-        ):
-            raise forms.ValidationError(DUPLICATE_ERROR)
-        return alias
+        fields = ["nombre_pieza", "alias", "activo"]

@@ -1,16 +1,9 @@
 from django.db import models
 
 
-VISIBILIDAD_CHOICES = [
-    ("privado", "Privado"),
-    ("red", "Red"),
-]
-
-
 class Marca(models.Model):
     yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="marcas_catalogo")
-    nombre = models.CharField(max_length=100)
-    logo = models.ImageField(upload_to="marcas/", blank=True)
+    nombre = models.CharField(max_length=100, unique=True)
     activo = models.BooleanField(default=True)
     visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
@@ -32,8 +25,8 @@ class ModeloVehiculo(models.Model):
     visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
     class Meta:
-        verbose_name = "Modelo de vehículo"
-        verbose_name_plural = "Modelos de vehículo"
+        verbose_name = "Modelo de vehiculo"
+        verbose_name_plural = "Modelos de vehiculo"
         unique_together = ["yonke", "marca", "nombre"]
         ordering = ["marca__nombre", "nombre"]
 
@@ -43,7 +36,7 @@ class ModeloVehiculo(models.Model):
 
 class CategoriaPieza(models.Model):
     yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="categorias_catalogo")
-    nombre = models.CharField(max_length=100)
+    nombre = models.CharField(max_length=100, unique=True)
     activo = models.BooleanField(default=True)
     visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
 
@@ -58,7 +51,7 @@ class CategoriaPieza(models.Model):
 
 
 class NombrePieza(models.Model):
-    yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="nombres_piezas")
+    yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="nombres_piezas_catalogo")
     nombre_normalizado = models.CharField(max_length=150)
     categoria = models.ForeignKey(CategoriaPieza, on_delete=models.SET_NULL, null=True, blank=True)
     activo = models.BooleanField(default=True)
@@ -74,10 +67,10 @@ class NombrePieza(models.Model):
 
 
 class AliasPieza(models.Model):
-    yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="alias_piezas")
+    yonke = models.ForeignKey("yonkes.Yonke", on_delete=models.CASCADE, null=True, blank=True, related_name="alias_piezas_catalogo")
     nombre_pieza = models.ForeignKey(NombrePieza, on_delete=models.CASCADE, related_name="alias")
     alias = models.CharField(max_length=150)
-    visibilidad = models.CharField(max_length=20, choices=VISIBILIDAD_CHOICES, default="privado")
+    activo = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = "Alias de pieza"
