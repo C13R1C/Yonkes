@@ -3,25 +3,50 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="{% url 'yonkes_html:yonkes-list' %}">Yonkes</a><span>/</span><span>Detalle</span>{% endblock %}
 {% block page_title %}<h1>{{ yonke.nombre }}</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack">
-  <div class="card-header"><h2 class="card-title">Informacion general</h2><div class="inline-actions"><a class="btn btn-secondary" href="{% url 'yonkes_html:yonkes-list' %}">Regresar</a>{% if can_edit_yonke %}<a class="btn btn-primary" href="{% url 'yonkes_html:yonkes-edit' yonke.id %}">Editar</a>{% endif %}</div></div>
-  <div class="details-grid">
-    <div><strong>Razon social:</strong> {{ yonke.razon_social|default:'-' }}</div>
-    <div><strong>Estatus:</strong> {{ yonke.get_estatus_display }}</div>
-    <div><strong>Mostrar contacto:</strong> {{ yonke.mostrar_contacto|yesno:"Si,No" }}</div>
-    {% if can_view_contact %}
-    <div><strong>Contacto principal:</strong> {{ yonke.contacto_principal|default:'-' }}</div>
-    <div><strong>Telefono:</strong> {{ yonke.telefono|default:'-' }}</div>
-    <div><strong>WhatsApp:</strong> {{ yonke.whatsapp|default:'-' }}</div>
-    <div><strong>Email:</strong> {{ yonke.email|default:'-' }}</div>
-    <div><strong>Direccion:</strong> {{ yonke.direccion|default:'-' }}</div>
-    {% else %}
-    <div class="full-width"><span class="badge badge-muted">Contacto no publico</span></div>
-    {% endif %}
-    {% if can_view_internal_data %}<div class="full-width"><strong>Notas internas:</strong> {{ yonke.notas_internas|default:'-' }}</div>{% endif %}
-    <div><strong>Creado:</strong> {{ yonke.creado_en|date:"Y-m-d H:i" }}</div>
-    <div><strong>Actualizado:</strong> {{ yonke.actualizado_en|date:"Y-m-d H:i" }}</div>
+<section class="detail-hero section-stack">
+  <div class="detail-hero-media detail-hero-emblem" aria-hidden="true">{{ yonke.nombre|first|upper }}</div>
+  <div class="detail-hero-content">
+    <div class="detail-kicker">Ficha de yonke</div>
+    <div class="detail-title-row">
+      <h2 class="detail-title">{{ yonke.nombre }}</h2>
+      <span class="badge {% if yonke.estatus == 'activo' %}badge-success{% elif yonke.estatus == 'pendiente' %}badge-warning{% elif yonke.estatus == 'suspendido' or yonke.estatus == 'dado_de_baja' %}badge-danger{% else %}badge-muted{% endif %}">{{ yonke.get_estatus_display }}</span>
+    </div>
+    <p class="detail-subtitle">{{ yonke.razon_social|default:'Razón social sin datos' }}</p>
+    <div class="detail-meta-row">
+      <span>Contacto: {{ yonke.mostrar_contacto|yesno:"visible,no público" }}</span>
+      {% if can_view_contact %}<span>{{ yonke.telefono|default:yonke.email|default:'Contacto sin datos' }}</span>{% else %}<span>Contacto no público</span>{% endif %}
+    </div>
+  </div>
+  <div class="detail-actions">
+    <a class="btn btn-secondary" href="{% url 'yonkes_html:yonkes-list' %}">Regresar</a>
+    {% if can_edit_yonke %}<a class="btn btn-primary" href="{% url 'yonkes_html:yonkes-edit' yonke.id %}">Editar</a>{% endif %}
   </div>
 </section>
-<section class="card"><header class="card-header"><h2 class="card-title">Resumen relacionado</h2></header><div class="details-grid"><div><strong>Vehiculos relacionados:</strong> {{ vehiculos_count|default:'-' }}</div><div><strong>Piezas relacionadas:</strong> {{ piezas_count|default:'-' }}</div></div></section>
+
+<section class="detail-stats section-stack" aria-label="Resumen del yonke">
+  <article class="detail-stat-card"><span class="detail-stat-marker"></span><strong>{{ vehiculos_count|default:'-' }}</strong><span>Vehículos relacionados</span></article>
+  <article class="detail-stat-card"><span class="detail-stat-marker detail-stat-marker-info"></span><strong>{{ piezas_count|default:'-' }}</strong><span>Piezas relacionadas</span></article>
+  <article class="detail-stat-card"><span class="detail-stat-marker detail-stat-marker-muted"></span><strong>{{ yonke.mostrar_contacto|yesno:"Sí,No" }}</strong><span>Contacto visible</span></article>
+</section>
+
+<section class="card section-stack detail-panel">
+  <header class="card-header"><h2 class="card-title">Información general</h2></header>
+  <div class="detail-grid">
+    <div class="detail-field"><span class="detail-label">Razón social</span><span class="detail-value">{{ yonke.razon_social|default:'-' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Estatus</span><span class="detail-value">{{ yonke.get_estatus_display }}</span></div>
+    <div class="detail-field"><span class="detail-label">Mostrar contacto</span><span class="detail-value">{{ yonke.mostrar_contacto|yesno:"Sí,No" }}</span></div>
+    {% if can_view_contact %}
+    <div class="detail-field"><span class="detail-label">Contacto principal</span><span class="detail-value">{{ yonke.contacto_principal|default:'-' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Teléfono</span><span class="detail-value">{{ yonke.telefono|default:'-' }}</span></div>
+    <div class="detail-field"><span class="detail-label">WhatsApp</span><span class="detail-value">{{ yonke.whatsapp|default:'-' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Email</span><span class="detail-value">{{ yonke.email|default:'-' }}</span></div>
+    <div class="detail-field detail-field-wide"><span class="detail-label">Dirección</span><span class="detail-value">{{ yonke.direccion|default:'-' }}</span></div>
+    {% else %}
+    <div class="detail-field detail-field-wide"><span class="detail-label">Contacto</span><span class="detail-value"><span class="badge badge-muted">Contacto no público</span></span></div>
+    {% endif %}
+    {% if can_view_internal_data %}<div class="detail-field detail-field-wide"><span class="detail-label">Notas internas</span><span class="detail-value">{{ yonke.notas_internas|default:'-' }}</span></div>{% endif %}
+    <div class="detail-field"><span class="detail-label">Creado</span><span class="detail-value">{{ yonke.creado_en|date:"Y-m-d H:i" }}</span></div>
+    <div class="detail-field"><span class="detail-label">Actualizado</span><span class="detail-value">{{ yonke.actualizado_en|date:"Y-m-d H:i" }}</span></div>
+  </div>
+</section>
 {% endblock %}
