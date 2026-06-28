@@ -3,6 +3,7 @@ from django.shortcuts import render
 
 from apps.accounts.permissions import is_admin_general, user_yonke
 from apps.catalogos.models import CategoriaPieza, Marca
+from apps.catalogos.policies import relation_queryset_for_user
 from apps.inventario.models import Pieza
 from apps.yonkes.models import Yonke
 
@@ -130,8 +131,8 @@ def buscar_piezas(request):
                 "solo_disponibles": solo_disponibles,
             },
             "yonkes": Yonke.objects.all().order_by("nombre"),
-            "categorias": CategoriaPieza.objects.filter(activo=True).order_by("nombre"),
-            "marcas": Marca.objects.filter(activo=True).order_by("nombre"),
+            "categorias": relation_queryset_for_user(CategoriaPieza.objects.filter(activo=True).order_by("nombre"), request.user),
+            "marcas": relation_queryset_for_user(Marca.objects.filter(activo=True).order_by("nombre"), request.user),
             "condicion_choices": Pieza.CONDICION_CHOICES,
             "estatus_choices": Pieza.ESTATUS_CHOICES,
         },

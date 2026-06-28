@@ -4,11 +4,12 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
-from apps.accounts.permissions import is_admin_general, is_dueno_yonke, is_empleado, user_yonke, user_yonke_is_active
+from apps.accounts.permissions import is_admin_general, user_yonke
 from apps.yonkes.models import Yonke
 
 from .forms import AliasPiezaForm, CategoriaPiezaForm, MarcaForm, ModeloVehiculoForm, NombrePiezaForm
 from .models import AliasPieza, CategoriaPieza, Marca, ModeloVehiculo, NombrePieza
+from .policies import can_access_catalogs, can_edit_catalog_item, can_manage_catalogs, catalog_queryset_for_user, owner_label, scope_label
 
 
 CATALOG_CARDS = [
@@ -20,41 +21,19 @@ CATALOG_CARDS = [
 ]
 
 
-def _is_catalog_operator(user):
-    return is_dueno_yonke(user) or is_empleado(user)
-
-
-def _can_access_catalogs(user):
-    return is_admin_general(user) or _is_catalog_operator(user)
-
-
-def _can_manage_catalogs(user):
-    return _is_catalog_operator(user) and user_yonke_is_active(user)
-
 
 def _require_catalog_access(request):
-    if not _can_access_catalogs(request.user):
+    if not can_access_catalogs(request.user):
         messages.error(request, "No tienes permiso para realizar esta acción.")
         raise PermissionDenied
 
 
 def _catalog_queryset(model, user, selected_yonke=""):
-    qs = model.objects.all()
-    if is_admin_general(user):
-        if selected_yonke:
-            qs = qs.filter(yonke_id=selected_yonke)
-        return qs
-    if _is_catalog_operator(user):
-        return qs.filter(yonke=user_yonke(user))
-    return qs.none()
-
-
-def _owner_label(obj):
-    return obj.yonke.nombre if getattr(obj, "yonke", None) else "Sin yonke asignado"
+    return catalog_queryset_for_user(model.objects.all(), user, selected_yonke=selected_yonke, include_alias_shared=(model is not AliasPieza))
 
 
 def _can_edit_row(user, obj):
-    return _can_manage_catalogs(user) and getattr(obj, "yonke_id", None) == getattr(user_yonke(user), "pk", None)
+    return can_edit_catalog_item(user, obj)
 
 
 @login_required(login_url="/login/")
@@ -75,7 +54,7 @@ def index(request):
         {
             "active_module": "catalogos",
             "cards": cards,
-            "is_catalog_read_only": is_admin_general(request.user),
+            "is_catalog_read_only": False,
         },
     )
 
@@ -95,7 +74,8 @@ def _catalog_list(request, *, model, title, slug, q_fields):
     rows = list(qs)
     duplicate_keys = {}
     for row in rows:
-        row.owner_label = _owner_label(row)
+        row.owner_label = owner_label(row)
+        row.scope_label = scope_label(row, request.user)
         row.can_edit_catalog = _can_edit_row(request.user, row)
         duplicate_key = str(row).strip().lower()
         duplicate_keys[duplicate_key] = duplicate_keys.get(duplicate_key, 0) + 1
@@ -117,8 +97,9 @@ def _catalog_list(request, *, model, title, slug, q_fields):
             "q": q,
             "selected_yonke": selected_yonke,
             "yonkes": Yonke.objects.all().order_by("nombre") if is_admin_general(request.user) else Yonke.objects.filter(pk=getattr(user_yonke(request.user), "pk", None)),
-            "can_create": _can_manage_catalogs(request.user),
-            "is_catalog_read_only": is_admin_general(request.user),
+            "can_create": can_manage_catalogs(request.user) and not (slug == "alias-piezas" and is_admin_general(request.user)),
+            "is_catalog_read_only": False,
+            "catalog_can_filter_yonke": is_admin_general(request.user),
             "total_registros": len(rows),
             "duplicate_count": duplicate_count,
         },
@@ -127,7 +108,7 @@ def _catalog_list(request, *, model, title, slug, q_fields):
 
 def _catalog_form(request, *, model, form_class, slug, title, pk=None):
     _require_catalog_access(request)
-    if not _can_manage_catalogs(request.user):
+    if not can_manage_catalogs(request.user) or (slug == "alias-piezas" and is_admin_general(request.user) and pk is None):
         messages.error(request, "No tienes permiso para realizar esta acción.")
         raise PermissionDenied
 
@@ -140,7 +121,7 @@ def _catalog_form(request, *, model, form_class, slug, title, pk=None):
     form = form_class(request.POST or None, request.FILES or None, instance=instance, user=request.user)
     if request.method == "POST" and form.is_valid():
         obj = form.save(commit=False)
-        obj.yonke = user_yonke(request.user)
+        obj.yonke = None if is_admin_general(request.user) else user_yonke(request.user)
         obj.save()
         form.save_m2m()
         messages.success(request, "Registro actualizado correctamente." if pk else "Registro creado correctamente.")
