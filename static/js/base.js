@@ -79,6 +79,19 @@
     }
 
     document.addEventListener("click", function (event) {
+        const dismissButton = event.target.closest("[data-dismiss-message]");
+
+        if (!dismissButton) {
+            return;
+        }
+
+        const message = dismissButton.closest(".message");
+        if (message) {
+            message.remove();
+        }
+    });
+
+    document.addEventListener("click", function (event) {
         if (userMenu && !userMenu.contains(event.target)) {
             closeUserMenu();
         }
