@@ -5,7 +5,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("catalogos", "0002_marca_logo"),
+        ("catalogos", "0002_alter_aliaspieza_unique_together_and_more"),
         ("yonkes", "0001_initial"),
     ]
 
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name="nombres_piezas",
+                related_name="nombres_piezas_catalogo",
                 to="yonkes.yonke",
             ),
         ),
@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name="alias_piezas",
+                related_name="alias_piezas_catalogo",
                 to="yonkes.yonke",
             ),
         ),

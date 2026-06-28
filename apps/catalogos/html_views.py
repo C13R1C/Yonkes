@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
@@ -10,6 +11,7 @@ from apps.yonkes.models import Yonke
 from .forms import AliasPiezaForm, CategoriaPiezaForm, MarcaForm, ModeloVehiculoForm, NombrePiezaForm
 from .models import AliasPieza, CategoriaPieza, Marca, ModeloVehiculo, NombrePieza
 from .permissions import can_access_catalogs, can_manage_catalog_record, scope_catalog_queryset
+from .policies import can_edit_catalog_item, catalog_queryset_for_user
 
 CATALOGS = {
     "marcas": (Marca, MarcaForm, "Marcas", "Marca", ["nombre"]),
