@@ -43,4 +43,4 @@ class NombrePiezaForm(BaseStyledModelForm):
 class AliasPiezaForm(BaseStyledModelForm):
     class Meta:
         model = AliasPieza
-        fields = ["nombre_pieza", "alias"]
+        fields = ["nombre_pieza", "alias", "activo"]
