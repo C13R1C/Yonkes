@@ -3,13 +3,26 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><span>Catálogos</span>{% endblock %}
 {% block page_title %}<h1>Catálogos</h1>{% endblock %}
 {% block content %}
-<section class="catalog-grid">
+<section class="catalog-admin-hero section-stack">
+  <div>
+    <span class="detail-kicker">Administración</span>
+    <h2>Catálogos operativos</h2>
+    <p>Administra las bases de datos que ordenan vehículos, piezas y búsquedas dentro de la red.</p>
+  </div>
+</section>
+
+<section class="catalog-admin-grid">
 {% for card in cards %}
-<article class="card">
-  <div class="card-header"><h2 class="card-title">{{ card.title }}</h2><span class="badge badge-info">{{ card.total }}</span></div>
-  <p>{{ card.description }}</p>
+<article class="catalog-admin-card">
+  <span class="catalog-card-marker" aria-hidden="true"></span>
+  <div class="catalog-admin-card-body">
+    <div class="catalog-admin-card-title"><h2>{{ card.title }}</h2><span class="badge badge-info">{{ card.total }}</span></div>
+    <p>{{ card.description }}</p>
+  </div>
   <a class="btn btn-primary" href="/catalogos/{{ card.slug }}/">{% if is_catalog_read_only %}Consultar{% else %}Administrar{% endif %}</a>
 </article>
+{% empty %}
+<div class="empty-state">No hay catálogos disponibles.</div>
 {% endfor %}
 </section>
 {% endblock %}

@@ -3,16 +3,44 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/catalogos/">Catálogos</a><span>/</span><span>{{ title }}</span>{% endblock %}
 {% block page_title %}<h1>{{ title }}</h1>{% endblock %}
 {% block content %}
-<div class="card">
-  <div class="card-header"><h2 class="card-title">Filtros</h2><a class="btn btn-primary" href="/catalogos/{{ slug }}/nuevo/">Nuevo</a></div>
-  <form method="get" class="form-grid"><div class="form-group full-width"><label class="form-label">Buscar</label><input class="form-control" name="q" value="{{ q }}"></div><div class="form-group full-width inline-actions"><button class="btn btn-primary" type="submit">Filtrar</button><a class="btn btn-secondary" href="/catalogos/{{ slug }}/">Limpiar</a></div></form>
-</div>
-<div class="card">
-  <div class="card-header"><h2 class="card-title">Registros</h2></div>
-  <div class="table-responsive"><table class="table"><thead><tr><th>Registro</th><th>Activo</th><th>Acciones</th></tr></thead><tbody>
+<section class="catalog-list-hero section-stack">
+  <div>
+    <span class="detail-kicker">Catálogo</span>
+    <h2>{{ title }}</h2>
+    <p>Consulta, filtra y administra los registros permitidos para tu alcance actual.</p>
+  </div>
+  <a class="btn btn-primary" href="/catalogos/{{ slug }}/nuevo/">Nuevo</a>
+</section>
+
+<section class="card catalog-filter-card section-stack">
+  <div class="card-header"><div><h2 class="card-title">Buscar registros</h2><p class="list-helper-text">Usa el nombre o dato disponible del catálogo para filtrar resultados.</p></div></div>
+  <form method="get" class="catalog-filter-form"><div class="form-group"><label class="form-label" for="catalog-q">Buscar</label><input class="form-control" id="catalog-q" name="q" value="{{ q }}" placeholder="Buscar en {{ title|lower }}"></div><div class="catalog-filter-actions"><button class="btn btn-primary" type="submit">Filtrar</button><a class="btn btn-secondary" href="/catalogos/{{ slug }}/">Limpiar</a></div></form>
+</section>
+
+<section class="card catalog-records-panel">
+  <div class="card-header"><div><h2 class="card-title">Registros</h2><p class="list-helper-text">{{ rows|length }} registro{% if rows|length != 1 %}s{% endif %} visible{% if rows|length != 1 %}s{% endif %}.</p></div></div>
+
+  <div class="catalog-card-list">
+    {% for r in rows %}
+    <article class="catalog-record-card">
+      <div class="catalog-record-main">
+        <span class="detail-kicker">Registro</span>
+        <h3>{{ r }}</h3>
+        <div class="catalog-record-badges">
+          {% if r.activo is not None %}<span class="badge {% if r.activo %}badge-success{% else %}badge-muted{% endif %}">{% if r.activo %}Activo{% else %}Inactivo{% endif %}</span>{% endif %}
+          {% if r.visibilidad %}<span class="badge badge-info">{{ r.get_visibilidad_display|default:r.visibilidad }}</span>{% endif %}
+          {% if r.yonke %}<span class="badge badge-muted">{{ r.yonke.nombre }}</span>{% else %}<span class="badge badge-muted">Global</span>{% endif %}
+        </div>
+      </div>
+      <div class="catalog-record-actions"><a class="btn btn-secondary" href="/catalogos/{{ slug }}/{{ r.id }}/editar/">Editar</a>{% if r.can_delete %}<form method="post" action="/catalogos/{{ slug }}/{{ r.id }}/eliminar/" onsubmit="return confirm('¿Seguro que deseas eliminar este registro? Si está en uso, será desactivado para no afectar inventario existente.');">{% csrf_token %}<button class="btn btn-danger" type="submit">Eliminar</button></form>{% endif %}</div>
+    </article>
+    {% empty %}<div class="empty-state">Sin registros.</div>{% endfor %}
+  </div>
+
+  <div class="table-responsive catalog-table-wrap"><table class="table catalog-table"><thead><tr><th>Registro</th><th>Estado</th><th>Alcance</th><th>Acciones</th></tr></thead><tbody>
   {% for r in rows %}
-  <tr><td>{{ r }}</td><td>{% if r.activo is not None %}{{ r.activo|yesno:"Sí,No" }}{% else %}—{% endif %}</td><td class="inline-actions"><a class="btn btn-secondary" href="/catalogos/{{ slug }}/{{ r.id }}/editar/">Editar</a>{% if r.can_delete %}<form method="post" action="/catalogos/{{ slug }}/{{ r.id }}/eliminar/" onsubmit="return confirm('¿Seguro que deseas eliminar este registro? Si está en uso, será desactivado para no afectar inventario existente.');">{% csrf_token %}<button class="btn btn-danger" type="submit">Eliminar</button></form>{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="3">Sin registros.</td></tr>{% endfor %}
+  <tr><td><strong>{{ r }}</strong></td><td>{% if r.activo is not None %}<span class="badge {% if r.activo %}badge-success{% else %}badge-muted{% endif %}">{% if r.activo %}Activo{% else %}Inactivo{% endif %}</span>{% else %}—{% endif %}</td><td>{% if r.visibilidad %}<span class="badge badge-info">{{ r.get_visibilidad_display|default:r.visibilidad }}</span>{% endif %}{% if r.yonke %}<span class="badge badge-muted">{{ r.yonke.nombre }}</span>{% else %}<span class="badge badge-muted">Global</span>{% endif %}</td><td class="catalog-table-actions"><a class="btn btn-secondary" href="/catalogos/{{ slug }}/{{ r.id }}/editar/">Editar</a>{% if r.can_delete %}<form method="post" action="/catalogos/{{ slug }}/{{ r.id }}/eliminar/" onsubmit="return confirm('¿Seguro que deseas eliminar este registro? Si está en uso, será desactivado para no afectar inventario existente.');">{% csrf_token %}<button class="btn btn-danger" type="submit">Eliminar</button></form>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="4">Sin registros.</td></tr>{% endfor %}
   </tbody></table></div>
-</div>
+</section>
 {% endblock %}
