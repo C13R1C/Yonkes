@@ -3,18 +3,33 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/auditoria/">Auditoría</a><span>/</span><span>Detalle</span>{% endblock %}
 {% block page_title %}<h1>Registro de auditoría #{{ log.id }}</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack">
-  <div class="details-grid">
-    <div><strong>Fecha:</strong> {{ log.creado_en|date:"Y-m-d H:i" }}</div>
-    <div><strong>Usuario:</strong> {% if log.usuario %}{{ log.usuario.username }}{% else %}Sin datos{% endif %}</div>
-    <div><strong>Yonke:</strong> {% if log.yonke %}{{ log.yonke.nombre }}{% else %}Sin datos{% endif %}</div>
-    <div><strong>Acción:</strong> {{ log.accion|default:"Sin datos" }}</div>
-    <div><strong>Entidad:</strong> {{ log.entidad|default:"Sin datos" }}</div>
-    <div><strong>ID entidad:</strong> {{ log.entidad_id|default:"Sin datos" }}</div>
-    <div><strong>IP:</strong> {{ log.ip_address|default:"Sin datos" }}</div>
-    <div class="full-width"><strong>User agent:</strong> {{ log.user_agent|default:"Sin datos" }}</div>
-    <div class="full-width"><strong>Cambios JSON:</strong><pre class="json-block">{{ log.cambios|default:"{}" }}</pre></div>
+<section class="detail-hero section-stack admin-ops-detail-hero">
+  <div class="detail-hero-media"><div class="detail-hero-emblem" aria-hidden="true">#{{ log.id }}</div></div>
+  <div class="detail-hero-content">
+    <span class="detail-kicker">Evento de auditoría</span>
+    <div class="detail-title-row"><h2 class="detail-title">{{ log.accion|default:"Sin acción" }}</h2><span class="badge badge-info">{{ log.entidad|default:"Sin entidad" }}</span></div>
+    <p class="detail-subtitle">{% if log.entidad_id %}Entidad ID {{ log.entidad_id }} · {% endif %}{{ log.creado_en|date:"Y-m-d H:i" }}</p>
+    <div class="detail-meta-row"><span>{% if log.usuario %}{{ log.usuario.username }}{% else %}Sin usuario{% endif %}</span><span>{% if log.yonke %}{{ log.yonke.nombre }}{% else %}Sin yonke{% endif %}</span><span>{{ log.ip_address|default:"Sin IP" }}</span></div>
   </div>
-  <div class="inline-actions"><a class="btn btn-secondary" href="/auditoria/">Volver</a></div>
+  <div class="detail-actions"><a class="btn btn-secondary" href="/auditoria/">Volver</a></div>
+</section>
+
+<section class="card detail-panel section-stack">
+  <header class="card-header"><div><h2 class="card-title">Resumen del evento</h2><p class="list-helper-text">Datos registrados para este log de auditoría.</p></div></header>
+  <div class="detail-grid">
+    <div class="detail-field"><span class="detail-label">Fecha</span><span class="detail-value">{{ log.creado_en|date:"Y-m-d H:i" }}</span></div>
+    <div class="detail-field"><span class="detail-label">Usuario</span><span class="detail-value">{% if log.usuario %}{{ log.usuario.username }}{% else %}Sin datos{% endif %}</span></div>
+    <div class="detail-field"><span class="detail-label">Yonke</span><span class="detail-value">{% if log.yonke %}{{ log.yonke.nombre }}{% else %}Sin datos{% endif %}</span></div>
+    <div class="detail-field"><span class="detail-label">Acción</span><span class="detail-value">{{ log.accion|default:"Sin datos" }}</span></div>
+    <div class="detail-field"><span class="detail-label">Entidad</span><span class="detail-value">{{ log.entidad|default:"Sin datos" }}</span></div>
+    <div class="detail-field"><span class="detail-label">ID entidad</span><span class="detail-value detail-mono">{{ log.entidad_id|default:"Sin datos" }}</span></div>
+    <div class="detail-field"><span class="detail-label">IP</span><span class="detail-value detail-mono">{{ log.ip_address|default:"Sin datos" }}</span></div>
+    <div class="detail-field detail-field-wide"><span class="detail-label">User agent</span><span class="detail-value">{{ log.user_agent|default:"Sin datos" }}</span></div>
+  </div>
+</section>
+
+<section class="card admin-ops-panel">
+  <header class="card-header"><div><h2 class="card-title">Cambios JSON</h2><p class="list-helper-text">Contenido registrado sin transformar los datos originales.</p></div></header>
+  <pre class="json-block admin-ops-json">{{ log.cambios|default:"{}" }}</pre>
 </section>
 {% endblock %}

@@ -3,27 +3,42 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/importaciones/">Importaciones</a><span>/</span><span>Detalle</span>{% endblock %}
 {% block page_title %}<h1>Importación #{{ importacion.id }}</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack">
-  <div class="form-errors full-width">{{ aviso_procesamiento }}</div>
-  <div class="details-grid">
-    <div><strong>Yonke:</strong> {{ importacion.yonke.nombre }}</div>
-    <div><strong>Tipo:</strong> {{ importacion.get_tipo_importacion_display }}</div>
-    <div><strong>Archivo:</strong> {% if importacion.archivo %}<a href="{{ importacion.archivo.url }}">{{ importacion.archivo.name }}</a>{% else %}—{% endif %}</div>
-    <div><strong>Estado:</strong> {{ importacion.get_estado_display }}</div>
-    <div><strong>Total filas:</strong> {{ importacion.total_filas }}</div>
-    <div><strong>Filas válidas:</strong> {{ importacion.filas_validas }}</div>
-    <div><strong>Filas con error:</strong> {{ importacion.filas_con_error }}</div>
-    <div><strong>Creado:</strong> {{ importacion.creado_en|date:"Y-m-d H:i" }}</div>
-    <div><strong>Actualizado:</strong> {{ importacion.actualizado_en|date:"Y-m-d H:i" }}</div>
-    <div class="full-width"><strong>Resultado JSON:</strong><pre class="json-block">{{ importacion.resultado|default:"{}" }}</pre></div>
+<section class="detail-hero section-stack admin-ops-detail-hero">
+  <div class="detail-hero-media"><div class="detail-hero-emblem" aria-hidden="true">#{{ importacion.id }}</div></div>
+  <div class="detail-hero-content">
+    <span class="detail-kicker">Importación</span>
+    <div class="detail-title-row"><h2 class="detail-title">Importación #{{ importacion.id }}</h2><span class="badge badge-info">{{ importacion.get_tipo_importacion_display }}</span><span class="badge {% if importacion.estado == 'pendiente' %}badge-warning{% elif importacion.estado == 'importada' %}badge-success{% elif importacion.estado == 'con_errores' or importacion.estado == 'cancelada' %}badge-danger{% else %}badge-info{% endif %}">{{ importacion.get_estado_display }}</span></div>
+    <p class="detail-subtitle">{% if importacion.archivo %}{{ importacion.archivo.name }}{% else %}Sin archivo{% endif %}</p>
+    <div class="detail-meta-row"><span>{{ importacion.yonke.nombre }}</span><span>{% if importacion.usuario %}{{ importacion.usuario.username }}{% else %}Sin usuario{% endif %}</span><span>{{ importacion.creado_en|date:"Y-m-d H:i" }}</span></div>
   </div>
-  <div class="inline-actions"><a class="btn btn-secondary" href="/importaciones/">Volver</a><a class="btn btn-primary" href="/importaciones/nueva/">Nueva importación</a></div>
+  <div class="detail-actions"><a class="btn btn-secondary" href="/importaciones/">Volver</a><a class="btn btn-primary" href="/importaciones/nueva/">Nueva importación</a></div>
 </section>
 
-<section class="card">
-  <header class="card-header"><h2 class="card-title">Errores de importación</h2></header>
+{% if aviso_procesamiento %}<div class="admin-ops-notice section-stack">{{ aviso_procesamiento }}</div>{% endif %}
+
+<section class="card detail-panel section-stack">
+  <header class="card-header"><div><h2 class="card-title">Resumen</h2><p class="list-helper-text">Datos registrados para esta importación.</p></div></header>
+  <div class="detail-grid">
+    <div class="detail-field"><span class="detail-label">Yonke</span><span class="detail-value">{{ importacion.yonke.nombre }}</span></div>
+    <div class="detail-field"><span class="detail-label">Tipo</span><span class="detail-value">{{ importacion.get_tipo_importacion_display }}</span></div>
+    <div class="detail-field"><span class="detail-label">Archivo</span><span class="detail-value">{% if importacion.archivo %}<a href="{{ importacion.archivo.url }}">{{ importacion.archivo.name }}</a>{% else %}—{% endif %}</span></div>
+    <div class="detail-field"><span class="detail-label">Estado</span><span class="detail-value">{{ importacion.get_estado_display }}</span></div>
+    <div class="detail-field"><span class="detail-label">Total filas</span><span class="detail-value">{{ importacion.total_filas }}</span></div>
+    <div class="detail-field"><span class="detail-label">Filas válidas</span><span class="detail-value">{{ importacion.filas_validas }}</span></div>
+    <div class="detail-field"><span class="detail-label">Filas con error</span><span class="detail-value">{{ importacion.filas_con_error }}</span></div>
+    <div class="detail-field"><span class="detail-label">Creado</span><span class="detail-value">{{ importacion.creado_en|date:"Y-m-d H:i" }}</span></div>
+    <div class="detail-field"><span class="detail-label">Actualizado</span><span class="detail-value">{{ importacion.actualizado_en|date:"Y-m-d H:i" }}</span></div>
+    <div class="detail-field detail-field-wide"><span class="detail-label">Resultado JSON</span><pre class="json-block admin-ops-json">{{ importacion.resultado|default:"{}" }}</pre></div>
+  </div>
+</section>
+
+<section class="card admin-ops-panel">
+  <header class="card-header"><div><h2 class="card-title">Errores de importación</h2><p class="list-helper-text">Filas con errores registradas por el sistema.</p></div></header>
   {% if errores %}
-    <div class="table-responsive"><table class="table"><thead><tr><th>Fila</th><th>Campo</th><th>Error</th><th>Valor</th></tr></thead><tbody>
+    <div class="admin-ops-card-list">
+      {% for e in errores %}<article class="admin-ops-error-card"><span class="badge badge-danger">Fila {{ e.numero_fila }}</span><h3>{{ e.error }}</h3><p><strong>Campo:</strong> {{ e.campo|default:'—' }}</p><p><strong>Valor:</strong> {{ e.valor|default:'—' }}</p></article>{% endfor %}
+    </div>
+    <div class="table-responsive admin-ops-table-wrap"><table class="table"><thead><tr><th>Fila</th><th>Campo</th><th>Error</th><th>Valor</th></tr></thead><tbody>
     {% for e in errores %}<tr><td>{{ e.numero_fila }}</td><td>{{ e.campo|default:'—' }}</td><td>{{ e.error }}</td><td>{{ e.valor|default:'—' }}</td></tr>{% endfor %}
     </tbody></table></div>
   {% else %}

@@ -3,34 +3,43 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><span>Importaciones</span>{% endblock %}
 {% block page_title %}<h1>Importaciones</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack">
-  <div class="card-header"><h2 class="card-title">Filtros</h2><a class="btn btn-primary" href="/importaciones/nueva/">Nueva importación</a></div>
-  <form method="get" class="form-grid">
-    <div class="form-group"><label class="form-label">Buscar</label><input class="form-control" name="q" value="{{ filters.q }}" placeholder="Archivo o texto relevante"></div>
-    <div class="form-group"><label class="form-label">Yonke</label><select class="form-select" name="yonke"><option value="">Todos</option>{% for y in yonkes %}<option value="{{ y.id }}" {% if filters.yonke == y.id|stringformat:'s' %}selected{% endif %}>{{ y.nombre }}</option>{% endfor %}</select></div>
-    <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" name="tipo"><option value="">Todos</option>{% for value,label in tipo_choices %}<option value="{{ value }}" {% if filters.tipo == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
-    <div class="form-group"><label class="form-label">Estado</label><select class="form-select" name="estado"><option value="">Todos</option>{% for value,label in estado_choices %}<option value="{{ value }}" {% if filters.estado == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
-    <div class="form-group full-width inline-actions"><button class="btn btn-primary" type="submit">Filtrar</button><a class="btn btn-secondary" href="/importaciones/">Limpiar</a></div>
+<section class="admin-ops-hero section-stack">
+  <div>
+    <span class="detail-kicker">Carga administrativa</span>
+    <h2>Importaciones</h2>
+    <p>Registra archivos y consulta el estado de las cargas disponibles para tu alcance.</p>
+  </div>
+  <a class="btn btn-primary" href="/importaciones/nueva/">Nueva importación</a>
+</section>
+
+<section class="card admin-ops-filter section-stack">
+  <div class="card-header"><div><h2 class="card-title">Filtros</h2><p class="list-helper-text">Filtra por archivo, yonke, tipo o estado sin cambiar la lógica de búsqueda.</p></div></div>
+  <form method="get" class="admin-ops-filter-form">
+    <div class="form-group admin-ops-filter-search"><label class="form-label" for="importaciones-q">Buscar</label><input class="form-control" id="importaciones-q" name="q" value="{{ filters.q }}" placeholder="Archivo o texto relevante"></div>
+    <div class="form-group"><label class="form-label" for="importaciones-yonke">Yonke</label><select class="form-select" id="importaciones-yonke" name="yonke"><option value="">Todos</option>{% for y in yonkes %}<option value="{{ y.id }}" {% if filters.yonke == y.id|stringformat:'s' %}selected{% endif %}>{{ y.nombre }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label class="form-label" for="importaciones-tipo">Tipo</label><select class="form-select" id="importaciones-tipo" name="tipo"><option value="">Todos</option>{% for value,label in tipo_choices %}<option value="{{ value }}" {% if filters.tipo == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label class="form-label" for="importaciones-estado">Estado</label><select class="form-select" id="importaciones-estado" name="estado"><option value="">Todos</option>{% for value,label in estado_choices %}<option value="{{ value }}" {% if filters.estado == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="admin-ops-filter-actions"><button class="btn btn-primary" type="submit">Filtrar</button><a class="btn btn-secondary" href="/importaciones/">Limpiar</a></div>
   </form>
 </section>
 
-<section class="card">
-  <header class="card-header"><h2 class="card-title">Listado de importaciones</h2></header>
+<section class="card admin-ops-panel">
+  <header class="card-header"><div><h2 class="card-title">Listado de importaciones</h2><p class="list-helper-text">Registros de archivos cargados y su estado actual.</p></div></header>
   {% if importaciones %}
-    <div class="table-responsive"><table class="table"><thead><tr><th>ID</th><th>Yonke</th><th>Tipo</th><th>Archivo</th><th>Estado</th><th>Total filas</th><th>Filas válidas</th><th>Filas con error</th><th>Fecha de creación</th><th>Acciones</th></tr></thead><tbody>
+    <div class="admin-ops-card-list">
+      {% for i in importaciones %}
+      <article class="admin-ops-card">
+        <div class="admin-ops-card-main"><span class="detail-kicker">Importación #{{ i.id }}</span><h3>{% if i.archivo %}{{ i.archivo.name }}{% else %}Sin archivo{% endif %}</h3><div class="admin-ops-badges"><span class="badge badge-info">{{ i.get_tipo_importacion_display }}</span><span class="badge {% if i.estado == 'pendiente' %}badge-warning{% elif i.estado == 'importada' %}badge-success{% elif i.estado == 'con_errores' or i.estado == 'cancelada' %}badge-danger{% else %}badge-info{% endif %}">{{ i.get_estado_display }}</span></div></div>
+        <div class="admin-ops-card-meta"><span>Yonke</span><strong>{{ i.yonke.nombre }}</strong><span>Usuario</span><strong>{% if i.usuario %}{{ i.usuario.username }}{% else %}Sin datos{% endif %}</strong><span>Fecha</span><strong>{{ i.creado_en|date:"Y-m-d H:i" }}</strong></div>
+        <div class="admin-ops-stats"><span>Total: <strong>{{ i.total_filas }}</strong></span><span>Válidas: <strong>{{ i.filas_validas }}</strong></span><span>Errores: <strong>{{ i.filas_con_error }}</strong></span></div>
+        <div class="admin-ops-actions"><a class="btn btn-secondary" href="/importaciones/{{ i.id }}/">Ver detalle</a></div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div class="table-responsive admin-ops-table-wrap"><table class="table"><thead><tr><th>ID</th><th>Yonke</th><th>Usuario</th><th>Tipo</th><th>Archivo</th><th>Estado</th><th>Total filas</th><th>Filas válidas</th><th>Filas con error</th><th>Fecha de creación</th><th>Acciones</th></tr></thead><tbody>
     {% for i in importaciones %}
-      <tr>
-        <td>#{{ i.id }}</td>
-        <td>{{ i.yonke.nombre }}</td>
-        <td>{{ i.get_tipo_importacion_display }}</td>
-        <td>{% if i.archivo %}{{ i.archivo.name }}{% else %}—{% endif %}</td>
-        <td><span class="badge {% if i.estado == 'pendiente' %}badge-warning{% elif i.estado == 'importada' %}badge-success{% elif i.estado == 'con_errores' or i.estado == 'cancelada' %}badge-danger{% else %}badge-info{% endif %}">{{ i.get_estado_display }}</span></td>
-        <td>{{ i.total_filas }}</td>
-        <td>{{ i.filas_validas }}</td>
-        <td>{{ i.filas_con_error }}</td>
-        <td>{{ i.creado_en|date:"Y-m-d H:i" }}</td>
-        <td><a class="btn btn-secondary" href="/importaciones/{{ i.id }}/">Ver detalle</a></td>
-      </tr>
+      <tr><td>#{{ i.id }}</td><td>{{ i.yonke.nombre }}</td><td>{% if i.usuario %}{{ i.usuario.username }}{% else %}Sin datos{% endif %}</td><td><span class="badge badge-info">{{ i.get_tipo_importacion_display }}</span></td><td>{% if i.archivo %}{{ i.archivo.name }}{% else %}—{% endif %}</td><td><span class="badge {% if i.estado == 'pendiente' %}badge-warning{% elif i.estado == 'importada' %}badge-success{% elif i.estado == 'con_errores' or i.estado == 'cancelada' %}badge-danger{% else %}badge-info{% endif %}">{{ i.get_estado_display }}</span></td><td>{{ i.total_filas }}</td><td>{{ i.filas_validas }}</td><td>{{ i.filas_con_error }}</td><td>{{ i.creado_en|date:"Y-m-d H:i" }}</td><td><a class="btn btn-secondary" href="/importaciones/{{ i.id }}/">Ver detalle</a></td></tr>
     {% endfor %}
     </tbody></table></div>
   {% else %}

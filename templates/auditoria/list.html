@@ -3,39 +3,35 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><span>Auditoría</span>{% endblock %}
 {% block page_title %}<h1>Auditoría</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack">
-  <header class="card-header"><h2 class="card-title">Filtros</h2></header>
-  <form method="get" class="form-grid">
-    <div class="form-group full-width"><label class="form-label">Búsqueda general</label><input class="form-control" name="q" value="{{ filters.q }}"></div>
-    <div class="form-group"><label class="form-label">Usuario</label><select class="form-select" name="usuario"><option value="">Todos</option>{% for u in usuarios %}<option value="{{ u.id }}" {% if filters.usuario == u.id|stringformat:'s' %}selected{% endif %}>{{ u.username }}</option>{% endfor %}</select></div>
-    <div class="form-group"><label class="form-label">Yonke</label><select class="form-select" name="yonke"><option value="">Todos</option>{% for y in yonkes %}<option value="{{ y.id }}" {% if filters.yonke == y.id|stringformat:'s' %}selected{% endif %}>{{ y.nombre }}</option>{% endfor %}</select></div>
-    <div class="form-group"><label class="form-label">Acción</label><input class="form-control" name="accion" value="{{ filters.accion }}"></div>
-    <div class="form-group"><label class="form-label">Entidad</label><input class="form-control" name="entidad" value="{{ filters.entidad }}"></div>
-    <div class="form-group"><label class="form-label">Fecha desde</label><input class="form-control" type="date" name="fecha_desde" value="{{ filters.fecha_desde }}"></div>
-    <div class="form-group"><label class="form-label">Fecha hasta</label><input class="form-control" type="date" name="fecha_hasta" value="{{ filters.fecha_hasta }}"></div>
-    <div class="form-group full-width inline-actions"><button class="btn btn-primary" type="submit">Filtrar</button><a class="btn btn-secondary" href="/auditoria/">Limpiar</a></div>
+<section class="admin-ops-hero section-stack">
+  <div><span class="detail-kicker">Trazabilidad</span><h2>Auditoría</h2><p>Consulta eventos administrativos y cambios registrados por el sistema.</p></div>
+</section>
+
+<section class="card admin-ops-filter section-stack">
+  <header class="card-header"><div><h2 class="card-title">Filtros</h2><p class="list-helper-text">Filtra los registros sin cambiar los nombres ni la lógica backend.</p></div></header>
+  <form method="get" class="admin-ops-filter-form audit-filter-form">
+    <div class="form-group admin-ops-filter-search"><label class="form-label" for="audit-q">Búsqueda general</label><input class="form-control" id="audit-q" name="q" value="{{ filters.q }}"></div>
+    <div class="form-group"><label class="form-label" for="audit-usuario">Usuario</label><select class="form-select" id="audit-usuario" name="usuario"><option value="">Todos</option>{% for u in usuarios %}<option value="{{ u.id }}" {% if filters.usuario == u.id|stringformat:'s' %}selected{% endif %}>{{ u.username }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label class="form-label" for="audit-yonke">Yonke</label><select class="form-select" id="audit-yonke" name="yonke"><option value="">Todos</option>{% for y in yonkes %}<option value="{{ y.id }}" {% if filters.yonke == y.id|stringformat:'s' %}selected{% endif %}>{{ y.nombre }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label class="form-label" for="audit-accion">Acción</label><input class="form-control" id="audit-accion" name="accion" value="{{ filters.accion }}"></div>
+    <div class="form-group"><label class="form-label" for="audit-entidad">Entidad</label><input class="form-control" id="audit-entidad" name="entidad" value="{{ filters.entidad }}"></div>
+    <div class="form-group"><label class="form-label" for="audit-fecha-desde">Fecha desde</label><input class="form-control" id="audit-fecha-desde" type="date" name="fecha_desde" value="{{ filters.fecha_desde }}"></div>
+    <div class="form-group"><label class="form-label" for="audit-fecha-hasta">Fecha hasta</label><input class="form-control" id="audit-fecha-hasta" type="date" name="fecha_hasta" value="{{ filters.fecha_hasta }}"></div>
+    <div class="admin-ops-filter-actions"><button class="btn btn-primary" type="submit">Filtrar</button><a class="btn btn-secondary" href="/auditoria/">Limpiar</a></div>
   </form>
 </section>
 
-<section class="card">
-  <header class="card-header"><h2 class="card-title">Registros</h2></header>
+<section class="card admin-ops-panel">
+  <header class="card-header"><div><h2 class="card-title">Registros</h2><p class="list-helper-text">Eventos registrados según los filtros actuales.</p></div></header>
   {% if logs %}
-  <div class="table-responsive"><table class="table"><thead><tr><th>Fecha</th><th>Usuario</th><th>Yonke</th><th>Acción</th><th>Entidad</th><th>ID entidad</th><th>IP</th><th>Acciones</th></tr></thead><tbody>
-  {% for log in logs %}
-  <tr>
-    <td>{{ log.creado_en|date:"Y-m-d H:i" }}</td>
-    <td>{% if log.usuario %}{{ log.usuario.username }}{% else %}Sin datos{% endif %}</td>
-    <td>{% if log.yonke %}{{ log.yonke.nombre }}{% else %}Sin datos{% endif %}</td>
-    <td><span class="badge badge-info">{{ log.accion|default:"Sin datos" }}</span></td>
-    <td>{{ log.entidad|default:"Sin datos" }}</td>
-    <td>{{ log.entidad_id|default:"Sin datos" }}</td>
-    <td>{{ log.ip_address|default:"Sin datos" }}</td>
-    <td><a class="btn btn-secondary" href="/auditoria/{{ log.id }}/">Ver detalle</a></td>
-  </tr>
-  {% endfor %}
+  <div class="audit-timeline-list">
+    {% for log in logs %}
+    <article class="audit-timeline-card"><span class="activity-dot" aria-hidden="true"></span><div class="audit-timeline-body"><div class="audit-timeline-head"><span class="badge badge-info">{{ log.accion|default:"Sin datos" }}</span><time>{{ log.creado_en|date:"Y-m-d H:i" }}</time></div><h3>{{ log.entidad|default:"Sin datos" }}{% if log.entidad_id %} #{{ log.entidad_id }}{% endif %}</h3><p>{% if log.usuario %}{{ log.usuario.username }}{% else %}Sin usuario{% endif %} · {% if log.yonke %}{{ log.yonke.nombre }}{% else %}Sin yonke{% endif %} · {{ log.ip_address|default:"Sin IP" }}</p><a class="btn btn-secondary" href="/auditoria/{{ log.id }}/">Ver detalle</a></div></article>
+    {% endfor %}
+  </div>
+  <div class="table-responsive admin-ops-table-wrap"><table class="table"><thead><tr><th>Fecha</th><th>Usuario</th><th>Yonke</th><th>Acción</th><th>Entidad</th><th>ID entidad</th><th>IP</th><th>Acciones</th></tr></thead><tbody>
+  {% for log in logs %}<tr><td>{{ log.creado_en|date:"Y-m-d H:i" }}</td><td>{% if log.usuario %}{{ log.usuario.username }}{% else %}Sin datos{% endif %}</td><td>{% if log.yonke %}{{ log.yonke.nombre }}{% else %}Sin datos{% endif %}</td><td><span class="badge badge-info">{{ log.accion|default:"Sin datos" }}</span></td><td>{{ log.entidad|default:"Sin datos" }}</td><td>{{ log.entidad_id|default:"Sin datos" }}</td><td>{{ log.ip_address|default:"Sin datos" }}</td><td><a class="btn btn-secondary" href="/auditoria/{{ log.id }}/">Ver detalle</a></td></tr>{% endfor %}
   </tbody></table></div>
-  {% else %}
-  <div class="empty-state">No hay registros de auditoría con esos filtros.</div>
-  {% endif %}
+  {% else %}<div class="empty-state">No hay registros de auditoría con esos filtros.</div>{% endif %}
 </section>
 {% endblock %}
