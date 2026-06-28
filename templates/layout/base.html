@@ -153,8 +153,15 @@
                 {% block page_title %}{% endblock %}
             </div>
             {% if messages %}
-            <div class="messages">
-                {% for message in messages %}<div class="message message-{{ message.tags }}">{{ message }}</div>{% endfor %}
+            <div class="messages" aria-live="polite">
+                {% for message in messages %}
+                <div class="message message-{{ message.tags }}" role="status">
+                    <span>{{ message }}</span>
+                    <button class="message-dismiss" type="button" aria-label="Cerrar mensaje" data-dismiss-message>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                {% endfor %}
             </div>
             {% endif %}
             {% block content %}{% endblock %}
