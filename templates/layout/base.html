@@ -38,14 +38,14 @@
         </form>
 
         <nav class="navbar-actions" aria-label="Acciones superiores">
-            <button class="icon-button navbar-action-button" type="button" aria-label="Notificaciones" aria-disabled="true">
+            <button class="icon-button navbar-action-button" type="button" aria-label="Notificaciones no disponibles" aria-disabled="true" disabled>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
                     <path d="M10 21h4"></path>
                 </svg>
                 <span class="navbar-action-dot" aria-hidden="true"></span>
             </button>
-            <button class="icon-button navbar-action-button" type="button" aria-label="Ayuda" aria-disabled="true">
+            <button class="icon-button navbar-action-button" type="button" aria-label="Ayuda no disponible" aria-disabled="true" disabled>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M12 18h.01"></path>
                     <path d="M9.1 9a3 3 0 1 1 5.8 1c-.5 1.2-1.7 1.7-2.4 2.5-.4.5-.5.9-.5 1.5"></path>
@@ -55,14 +55,14 @@
 
             <div class="user-menu" data-user-menu>
                 {% if request.user.is_authenticated %}
-                <button class="user-menu-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                <button class="user-menu-trigger" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="user-dropdown-menu">
                     <span class="avatar" aria-hidden="true">{{ request.user.username|first|upper }}</span>
                     <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="m6 9 6 6 6-6"></path>
                     </svg>
                 </button>
-                <div class="user-dropdown" role="menu">
+                <div class="user-dropdown" id="user-dropdown-menu" role="menu">
                     <a href="/perfil/" role="menuitem">Perfil</a>
                     <a href="/configuracion/" role="menuitem">Configuración</a>
                     <a href="/logout/" role="menuitem">Cerrar sesión</a>
@@ -187,9 +187,9 @@
         <footer class="app-footer">
             <span>&copy; 2024 Red de Yonkes. Todos los derechos reservados.</span>
             <nav aria-label="Enlaces legales">
-                <a href="#">Términos</a>
-                <a href="#">Privacidad</a>
-                <a href="#">Ayuda</a>
+                <span>Términos</span>
+                <span>Privacidad</span>
+                <span>Ayuda</span>
             </nav>
         </footer>
     </main>
