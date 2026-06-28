@@ -7,8 +7,6 @@
     const searchForm = document.querySelector("[data-global-search]");
     const searchFeedback = document.querySelector("[data-search-feedback]");
     const sidebarLinks = document.querySelectorAll(".sidebar-link");
-    const searchFilterToggle = document.querySelector("[data-toggle-search-filters]");
-    const searchFilterPanel = document.querySelector("#advanced-search-filters");
     let feedbackTimer = null;
 
     function setSidebar(open) {
@@ -82,14 +80,6 @@
             }
         });
     });
-
-
-    if (searchFilterToggle && searchFilterPanel) {
-        searchFilterToggle.addEventListener("click", function () {
-            const collapsed = searchFilterPanel.classList.toggle("is-collapsed");
-            searchFilterToggle.setAttribute("aria-expanded", String(!collapsed));
-        });
-    }
 
     if (searchForm) {
         searchForm.addEventListener("submit", function (event) {
