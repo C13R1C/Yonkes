@@ -146,7 +146,6 @@
 
     <main class="app-main" id="main-content">
         <section class="page-shell">
-            {% if messages %}<div class="messages-container">{% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
             <div class="breadcrumb">
                 {% block breadcrumbs %}{% endblock %}
             </div>
