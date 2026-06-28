@@ -850,6 +850,7 @@ img.catalog-logo,
     border-bottom: 1px solid rgba(185, 200, 194, 0.72);
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
 }
+.search-feedback.is-visible { display: block; }
 
 .navbar-brand-group { flex: 0 0 auto; }
 
@@ -1049,6 +1050,7 @@ img.catalog-logo,
 .page-heading h1 {
     max-width: 980px;
 }
+.media-cell { display: flex; align-items: center; gap: var(--space-2); }
 
 .page-heading p,
 .page-heading .page-subtitle {
