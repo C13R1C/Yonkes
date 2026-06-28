@@ -3,32 +3,60 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="{% url 'inventario_html:piezas-list' %}">Piezas</a><span>/</span><span>Detalle</span>{% endblock %}
 {% block page_title %}<h1>{{ pieza.nombre }}</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack">
-  <div class="card-header"><h2 class="card-title">Información general</h2><div class="inline-actions"><a class="btn btn-secondary" href="{% url 'inventario_html:piezas-list' %}">Regresar</a>{% if can_edit %}<a class="btn btn-primary" href="{% url 'inventario_html:piezas-edit' pieza.id %}">Editar</a>{% endif %}</div></div>
-  <div class="full-width">{% if pieza.imagen_principal %}<img class="media-detail" src="{{ pieza.imagen_principal.url }}" alt="{{ pieza.nombre }}">{% elif pieza.vehiculo and pieza.vehiculo.imagen_principal %}<img class="media-detail" src="{{ pieza.vehiculo.imagen_principal.url }}" alt="{{ pieza.vehiculo }}">{% else %}<span class="media-detail media-placeholder">Sin imagen</span>{% endif %}</div>
-  <div class="details-grid">
-    <div><strong>Nombre:</strong> {{ pieza.nombre }}</div>
-    <div><strong>Nombre normalizado:</strong> {{ pieza.nombre_normalizado.nombre_normalizado|default:'-' }}</div>
-    <div><strong>Alias local:</strong> {{ pieza.alias_local|default:'-' }}</div>
-    <div><strong>Yonke:</strong> {{ pieza.yonke.nombre }}</div>
-    <div><strong>Vehículo relacionado:</strong> {{ vehiculo_label }}</div>
-    <div><strong>Categoría:</strong> {{ pieza.categoria.nombre|default:'-' }}</div>
-    <div><strong>Marca compatible:</strong> <span class="media-cell">{% if pieza.marca_compatible.logo %}<img class="brand-logo" src="{{ pieza.marca_compatible.logo.url }}" alt="{{ pieza.marca_compatible.nombre }}">{% endif %}{{ pieza.marca_compatible.nombre|default:pieza.marca_texto|default:'-' }}</span></div>
-    <div><strong>Modelo compatible:</strong> {{ pieza.modelo_compatible.nombre|default:pieza.modelo_texto|default:'-' }}</div>
-    <div><strong>Año inicial:</strong> {{ pieza.anio_inicio|default:'-' }}</div>
-    <div><strong>Año final:</strong> {{ pieza.anio_fin|default:'-' }}</div>
-    <div><strong>Condición:</strong> {{ pieza.get_condicion_display }}</div>
-    <div><strong>Estatus:</strong> {{ pieza.get_estatus_display }}</div>
-    <div><strong>Visibilidad:</strong> {{ pieza.get_visibilidad_display }}</div>
-    <div><strong>Precio:</strong> {% if can_view_sensitive or pieza.precio_visible %}{% if pieza.precio %}${{ pieza.precio }}{% else %}-{% endif %}{% else %}<span class="badge badge-muted">Precio no visible</span>{% endif %}</div>
-    <div><strong>Precio visible:</strong> {{ pieza.precio_visible|yesno:"Sí,No" }}</div>
-    <div><strong>Cantidad:</strong> {{ pieza.cantidad }}</div>
+<section class="detail-hero section-stack">
+  <div class="detail-hero-media">
+    {% if pieza.imagen_principal %}<img class="detail-hero-image" src="{{ pieza.imagen_principal.url }}" alt="{{ pieza.nombre }}">{% elif pieza.vehiculo and pieza.vehiculo.imagen_principal %}<img class="detail-hero-image" src="{{ pieza.vehiculo.imagen_principal.url }}" alt="{{ vehiculo_label }}">{% else %}<span class="detail-hero-placeholder">Sin imagen</span>{% endif %}
+  </div>
+  <div class="detail-hero-content">
+    <div class="detail-kicker">Ficha de pieza</div>
+    <div class="detail-title-row">
+      <h2 class="detail-title">{{ pieza.nombre }}</h2>
+      <span class="badge {% if pieza.estatus == 'disponible' %}badge-success{% elif pieza.estatus == 'apartada' or pieza.estatus == 'pendiente_revision' %}badge-warning{% elif pieza.estatus == 'vendida' or pieza.estatus == 'danada' or pieza.estatus == 'agotada' %}badge-danger{% else %}badge-muted{% endif %}">{{ pieza.get_estatus_display }}</span>
+    </div>
+    <p class="detail-subtitle">{{ pieza.categoria.nombre|default:'Categoría sin datos' }} · {{ pieza.get_condicion_display }} · Cantidad {{ pieza.cantidad }}</p>
+    <div class="detail-meta-row">
+      <span>{{ pieza.yonke.nombre }}</span>
+      <span>{{ vehiculo_label }}</span>
+      <span>{% if can_view_sensitive or pieza.precio_visible %}{% if pieza.precio %}${{ pieza.precio }}{% else %}Precio sin datos{% endif %}{% else %}Precio no visible{% endif %}</span>
+    </div>
+  </div>
+  <div class="detail-actions">
+    <a class="btn btn-secondary" href="{% url 'inventario_html:piezas-list' %}">Regresar</a>
+    {% if can_edit %}<a class="btn btn-primary" href="{% url 'inventario_html:piezas-edit' pieza.id %}">Editar</a>{% endif %}
+  </div>
+</section>
+
+<section class="detail-stats section-stack" aria-label="Resumen de la pieza">
+  <article class="detail-stat-card"><span class="detail-stat-marker"></span><strong>{{ pieza.cantidad }}</strong><span>Cantidad</span></article>
+  <article class="detail-stat-card"><span class="detail-stat-marker detail-stat-marker-info"></span><strong>{{ pieza.get_condicion_display }}</strong><span>Condición</span></article>
+  <article class="detail-stat-card"><span class="detail-stat-marker detail-stat-marker-muted"></span><strong>{% if can_view_sensitive or pieza.precio_visible %}{% if pieza.precio %}${{ pieza.precio }}{% else %}-{% endif %}{% else %}No visible{% endif %}</strong><span>Precio</span></article>
+</section>
+
+<section class="card section-stack detail-panel">
+  <header class="card-header"><h2 class="card-title">Información general</h2></header>
+  <div class="detail-grid">
+    <div class="detail-field"><span class="detail-label">Nombre</span><span class="detail-value">{{ pieza.nombre }}</span></div>
+    <div class="detail-field"><span class="detail-label">Nombre normalizado</span><span class="detail-value">{{ pieza.nombre_normalizado.nombre_normalizado|default:'-' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Alias local</span><span class="detail-value">{{ pieza.alias_local|default:'-' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Yonke</span><span class="detail-value">{{ pieza.yonke.nombre }}</span></div>
+    <div class="detail-field"><span class="detail-label">Vehículo relacionado</span><span class="detail-value">{{ vehiculo_label }}</span></div>
+    <div class="detail-field"><span class="detail-label">Categoría</span><span class="detail-value">{{ pieza.categoria.nombre|default:'-' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Marca compatible</span><span class="detail-value media-cell">{% if pieza.marca_compatible.logo %}<img class="brand-logo" src="{{ pieza.marca_compatible.logo.url }}" alt="{{ pieza.marca_compatible.nombre }}">{% endif %}{{ pieza.marca_compatible.nombre|default:pieza.marca_texto|default:'-' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Modelo compatible</span><span class="detail-value">{{ pieza.modelo_compatible.nombre|default:pieza.modelo_texto|default:'-' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Año inicial</span><span class="detail-value">{{ pieza.anio_inicio|default:'-' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Año final</span><span class="detail-value">{{ pieza.anio_fin|default:'-' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Condición</span><span class="detail-value">{{ pieza.get_condicion_display }}</span></div>
+    <div class="detail-field"><span class="detail-label">Estatus</span><span class="detail-value">{{ pieza.get_estatus_display }}</span></div>
+    <div class="detail-field"><span class="detail-label">Visibilidad</span><span class="detail-value">{{ pieza.get_visibilidad_display }}</span></div>
+    <div class="detail-field"><span class="detail-label">Precio</span><span class="detail-value">{% if can_view_sensitive or pieza.precio_visible %}{% if pieza.precio %}${{ pieza.precio }}{% else %}-{% endif %}{% else %}<span class="badge badge-muted">Precio no visible</span>{% endif %}</span></div>
+    <div class="detail-field"><span class="detail-label">Precio visible</span><span class="detail-value">{{ pieza.precio_visible|yesno:"Sí,No" }}</span></div>
+    <div class="detail-field"><span class="detail-label">Cantidad</span><span class="detail-value">{{ pieza.cantidad }}</span></div>
     {% if can_view_sensitive %}
-    <div><strong>Ubicación:</strong> {{ pieza.ubicacion|default:'-' }}</div>
-    <div class="full-width"><strong>Observaciones:</strong> {{ pieza.observaciones|default:'-' }}</div>
+    <div class="detail-field"><span class="detail-label">Ubicación</span><span class="detail-value">{{ pieza.ubicacion|default:'-' }}</span></div>
+    <div class="detail-field detail-field-wide"><span class="detail-label">Observaciones</span><span class="detail-value">{{ pieza.observaciones|default:'-' }}</span></div>
     {% endif %}
-    <div><strong>Creado:</strong> {{ pieza.creado_en|date:"Y-m-d H:i" }}</div>
-    <div><strong>Actualizado:</strong> {{ pieza.actualizado_en|date:"Y-m-d H:i" }}</div>
+    <div class="detail-field"><span class="detail-label">Creado</span><span class="detail-value">{{ pieza.creado_en|date:"Y-m-d H:i" }}</span></div>
+    <div class="detail-field"><span class="detail-label">Actualizado</span><span class="detail-value">{{ pieza.actualizado_en|date:"Y-m-d H:i" }}</span></div>
   </div>
 </section>
 {% endblock %}
