@@ -95,7 +95,7 @@ def _catalog_form(request, *, model, form_class, slug, title, pk=None):
     instance = get_object_or_404(scope_catalog_queryset(request.user, model.objects.all()), pk=pk) if pk else None
     if instance and not can_manage_catalog_record(request.user, instance):
         raise PermissionDenied("No tienes permiso para realizar esta acción.")
-    form = form_class(request.POST or None, instance=instance)
+    form = form_class(request.POST or None, request.FILES or None, instance=instance, user=request.user)
     if request.method == "POST" and form.is_valid():
         obj = form.save(commit=False)
         if not pk and hasattr(obj, "yonke_id"):
@@ -106,6 +106,18 @@ def _catalog_form(request, *, model, form_class, slug, title, pk=None):
         obj.save()
         form.save_m2m()
         return redirect(f"catalogos-{slug}-list")
+    return render(
+        request,
+        "catalogos/form.html",
+        {
+            "active_module": "catalogos",
+            "title": title,
+            "slug": slug,
+            "form": form,
+            "object": instance,
+            "is_edit": bool(pk),
+        },
+    )
 
 @require_POST
 def _catalog_delete(request, *, model, slug):
