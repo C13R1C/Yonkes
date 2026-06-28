@@ -13,128 +13,92 @@
 {% endblock %}
 
 {% block content %}
-    <section class="dashboard-grid">
-        <div class="dashboard-metrics">
-            <article class="card metric-card metric-card-teal">
-                <p class="metric-label">Yonkes activos</p>
-                <p class="metric-value">{{ metrics.yonkes_activos }}</p>
-            </article>
-            <article class="card metric-card metric-card-blue">
-                <p class="metric-label">Vehículos registrados</p>
-                <p class="metric-value">{{ metrics.vehiculos_registrados }}</p>
-            </article>
-            <article class="card metric-card metric-card-orange">
-                <p class="metric-label">Piezas disponibles</p>
-                <p class="metric-value">{{ metrics.piezas_disponibles }}</p>
-            </article>
-            <article class="card metric-card metric-card-muted">
-                <p class="metric-label">Búsquedas hoy</p>
-                <p class="metric-value">{{ metrics.busquedas_hoy }}</p>
-            </article>
+<section class="dashboard-control-center">
+    <section class="dashboard-welcome section-stack">
+        <div class="dashboard-welcome-copy">
+            <span class="detail-kicker">Centro de control</span>
+            <h2>Hola, {{ request.user.get_full_name|default:request.user.username }}</h2>
+            <p>Revisa el estado general del inventario y accede rápido a las áreas principales del sistema.</p>
+            <div class="dashboard-user-meta">
+                <span>{{ request.user.profile.get_rol_display|default:"Rol no disponible" }}</span>
+                <span>{% if request.user.profile.yonke %}{{ request.user.profile.yonke.nombre }}{% else %}Sin yonke asociado{% endif %}</span>
+            </div>
         </div>
+        <form class="dashboard-welcome-search" method="get" action="/busqueda/">
+            <label class="form-label" for="dashboard-hero-pieza">Búsqueda rápida de pieza</label>
+            <div class="dashboard-search-inline">
+                <input class="form-control" id="dashboard-hero-pieza" name="pieza" type="text" placeholder="Ej. alternador, faro, defensa">
+                <button class="btn btn-primary" type="submit">Buscar</button>
+            </div>
+        </form>
+    </section>
 
-        <section class="card dashboard-main-panel">
-            <header class="card-header">
-                <h2 class="card-title">Últimas piezas registradas</h2>
-            </header>
+    <section class="dashboard-kpi-grid section-stack" aria-label="Indicadores principales">
+        <article class="dashboard-kpi-card">
+            <span class="dashboard-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"></path></svg></span>
+            <div><strong>{{ metrics.yonkes_activos }}</strong><span>Yonkes activos</span><p>Operaciones disponibles en tu alcance.</p></div>
+        </article>
+        <article class="dashboard-kpi-card dashboard-kpi-blue">
+            <span class="dashboard-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 17h14l-1-5H6l-1 5ZM7 17v2M17 17v2M8 12l1.4-4h5.2L16 12"></path></svg></span>
+            <div><strong>{{ metrics.vehiculos_registrados }}</strong><span>Vehículos registrados</span><p>Unidades capturadas para inventario.</p></div>
+        </article>
+        <article class="dashboard-kpi-card dashboard-kpi-orange">
+            <span class="dashboard-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m14.7 6.3 3 3M5 19l6.5-6.5M13 5l6 6-8 8H5v-6l8-8Z"></path></svg></span>
+            <div><strong>{{ metrics.piezas_disponibles }}</strong><span>Piezas disponibles</span><p>Piezas con disponibilidad actual.</p></div>
+        </article>
+        <article class="dashboard-kpi-card dashboard-kpi-muted">
+            <span class="dashboard-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m21 21-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"></path></svg></span>
+            <div><strong>{{ metrics.busquedas_hoy }}</strong><span>Búsquedas hoy</span><p>Métrica recibida desde backend.</p></div>
+        </article>
+    </section>
 
+    <section class="dashboard-quick-actions section-stack" aria-label="Accesos rápidos">
+        <a class="dashboard-action-card" href="/vehiculos/"><span>Vehículos</span><strong>Gestionar unidades</strong></a>
+        <a class="dashboard-action-card" href="/piezas/"><span>Piezas</span><strong>Consultar inventario</strong></a>
+        <a class="dashboard-action-card" href="/busqueda/"><span>Búsqueda</span><strong>Encontrar piezas</strong></a>
+        <a class="dashboard-action-card" href="/yonkes/"><span>Yonkes</span><strong>Directorio operativo</strong></a>
+        {% if perm_can_access_catalogs %}<a class="dashboard-action-card" href="/catalogos/"><span>Catálogos</span><strong>Administrar datos base</strong></a>{% endif %}
+        {% if perm_can_manage_users %}<a class="dashboard-action-card" href="/usuarios/"><span>Usuarios</span><strong>Gestionar accesos</strong></a>{% endif %}
+    </section>
+
+    <section class="dashboard-content-grid">
+        <section class="card dashboard-panel">
+            <header class="card-header"><div><h2 class="card-title">Últimas piezas registradas</h2><p class="list-helper-text">Registros recientes recibidos desde inventario.</p></div><a class="btn btn-secondary" href="/piezas/">Ver piezas</a></header>
             {% if ultimas_piezas %}
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Imagen</th>
-                                <th>Pieza</th>
-                                <th>Yonke</th>
-                                <th>Estatus</th>
-                                <th>Precio</th>
-                                <th>Fecha registrada</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for pieza in ultimas_piezas %}
-                                <tr>
-                                    <td>{% if pieza.imagen_principal %}<img class="media-thumb" src="{{ pieza.imagen_principal.url }}" alt="{{ pieza.nombre }}">{% elif pieza.vehiculo and pieza.vehiculo.imagen_principal %}<img class="media-thumb" src="{{ pieza.vehiculo.imagen_principal.url }}" alt="{{ pieza.vehiculo }}">{% else %}<span class="media-thumb media-placeholder">Sin imagen</span>{% endif %}</td>
-                                    <td>{{ pieza.nombre|default:"Sin nombre" }}</td>
-                                    <td>{{ pieza.yonke.nombre|default:"Sin yonke" }}</td>
-                                    <td>
-                                        <span class="badge {% if pieza.estatus == 'disponible' %}badge-success{% elif pieza.estatus == 'apartada' or pieza.estatus == 'pendiente_revision' %}badge-warning{% elif pieza.estatus == 'vendida' or pieza.estatus == 'danada' %}badge-danger{% else %}badge-muted{% endif %}">
-                                            {{ pieza.get_estatus_display|default:pieza.estatus|default:"Sin estatus" }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {% if pieza.can_view_sensitive or pieza.precio_visible %}
-                                            {% if pieza.precio %}
-                                                ${{ pieza.precio }}
-                                            {% else %}
-                                                —
-                                            {% endif %}
-                                        {% else %}
-                                            Precio no visible
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ pieza.creado_en|date:"Y-m-d H:i"|default:"—" }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="dashboard-piece-list">
+                    {% for pieza in ultimas_piezas %}
+                    <article class="dashboard-piece-card">
+                        <div class="dashboard-piece-media">{% if pieza.imagen_principal %}<img src="{{ pieza.imagen_principal.url }}" alt="{{ pieza.nombre }}">{% elif pieza.vehiculo and pieza.vehiculo.imagen_principal %}<img src="{{ pieza.vehiculo.imagen_principal.url }}" alt="{{ pieza.vehiculo }}">{% else %}<span>Sin imagen</span>{% endif %}</div>
+                        <div class="dashboard-piece-body">
+                            <div class="dashboard-piece-topline"><span>{{ pieza.yonke.nombre|default:"Sin yonke" }}</span><span>{{ pieza.creado_en|date:"Y-m-d H:i"|default:"—" }}</span></div>
+                            <h3>{{ pieza.nombre|default:"Sin nombre" }}</h3>
+                            <div class="dashboard-piece-meta"><span class="badge {% if pieza.estatus == 'disponible' %}badge-success{% elif pieza.estatus == 'apartada' or pieza.estatus == 'pendiente_revision' %}badge-warning{% elif pieza.estatus == 'vendida' or pieza.estatus == 'danada' %}badge-danger{% else %}badge-muted{% endif %}">{{ pieza.get_estatus_display|default:pieza.estatus|default:"Sin estatus" }}</span>{% if pieza.can_view_sensitive or pieza.precio_visible %}<span>{% if pieza.precio %}${{ pieza.precio }}{% else %}—{% endif %}</span>{% else %}<span class="badge badge-muted">Precio no visible</span>{% endif %}</div>
+                        </div>
+                    </article>
+                    {% endfor %}
                 </div>
             {% else %}
-                <div class="empty-state">
-                    No hay piezas registradas todavía.
-                </div>
+                <div class="empty-state">No hay piezas registradas todavía.</div>
             {% endif %}
         </section>
 
-        <aside class="dashboard-side-panels">
-            <section class="card">
-                <header class="card-header">
-                    <h2 class="card-title">Búsqueda rápida</h2>
-                </header>
-                <form class="form-grid" method="get" action="/busqueda/">
-                    <div class="form-group full-width">
-                        <label class="form-label" for="dashboard-pieza">Pieza</label>
-                        <input class="form-control" id="dashboard-pieza" name="pieza" type="text" placeholder="Ej. alternador">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="dashboard-marca">Marca</label>
-                        <select class="form-select" id="dashboard-marca" name="marca">
-                            <option value="">Todas</option>
-                            {% for marca in marcas %}
-                                <option value="{{ marca.nombre }}">{{ marca.nombre }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="dashboard-modelo">Modelo</label>
-                        <input class="form-control" id="dashboard-modelo" name="modelo" type="text" placeholder="Ej. Versa">
-                    </div>
-                    <div class="form-group full-width">
-                        <label class="form-label" for="dashboard-anio">Año</label>
-                        <input class="form-control" id="dashboard-anio" name="anio" type="number" min="1900" max="2100" placeholder="Ej. 2018">
-                    </div>
-                    <div class="form-group full-width">
-                        <button class="btn btn-primary" type="submit">Buscar</button>
-                    </div>
-                </form>
-            </section>
-
-            <section class="card">
-                <header class="card-header">
-                    <h2 class="card-title">Actividad reciente</h2>
-                </header>
-                <ul class="activity-list">
+        <aside class="dashboard-side-stack">
+            <section class="card dashboard-panel">
+                <header class="card-header"><div><h2 class="card-title">Actividad reciente</h2><p class="list-helper-text">Información disponible actualmente.</p></div></header>
+                <ul class="activity-list dashboard-activity-list">
                     {% for event in actividad_reciente %}
-                        <li class="activity-item">
-                            <span class="activity-dot" aria-hidden="true"></span>
-                            <div>
-                                <p class="activity-title">{{ event.title }}</p>
-                                <p class="activity-meta">{{ event.meta }}</p>
-                            </div>
-                        </li>
+                        <li class="activity-item"><span class="activity-dot" aria-hidden="true"></span><div><p class="activity-title">{{ event.title }}</p><p class="activity-meta">{{ event.meta }}</p></div></li>
                     {% endfor %}
                 </ul>
             </section>
+
+            <section class="card dashboard-panel dashboard-chart-placeholder">
+                <span class="dashboard-chart-icon" aria-hidden="true"></span>
+                <h2 class="card-title">Tendencias de inventario</h2>
+                <p>Las gráficas estarán disponibles cuando existan métricas históricas.</p>
+                <span class="badge badge-muted">Disponible en una próxima actualización</span>
+            </section>
         </aside>
     </section>
+</section>
 {% endblock %}
