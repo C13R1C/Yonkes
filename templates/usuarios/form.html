@@ -3,9 +3,34 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/usuarios/">Usuarios</a><span>/</span><span>{% if is_edit %}Editar{% else %}Nuevo{% endif %}</span>{% endblock %}
 {% block page_title %}<h1>{% if is_edit %}Editar usuario{% else %}Nuevo usuario{% endif %}</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack"><form method="post" class="form-grid">{% csrf_token %}
-{% if form.non_field_errors %}<div class="form-errors full-width">{{ form.non_field_errors }}</div>{% endif %}
-{% for field in form %}<div class="form-group full-width"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endfor %}
-<div class="form-group full-width inline-actions"><a class="btn btn-secondary" href="{% if is_edit %}/usuarios/{{ user_obj.id }}/{% else %}/usuarios/{% endif %}">Regresar</a><button class="btn btn-primary" type="submit">Guardar</button></div>
-</form></section>
+<section class="user-form-shell">
+  <form method="post" class="user-form">{% csrf_token %}
+    <section class="user-form-hero">
+      <div>
+        <span class="detail-kicker">Administración de accesos</span>
+        <h2>{% if is_edit %}Editar usuario{% else %}Nuevo usuario{% endif %}</h2>
+        <p>Captura los datos de cuenta, rol y acceso sin cambiar las reglas de permisos existentes.</p>
+      </div>
+      <div class="user-form-hero-actions"><a class="btn btn-secondary" href="{% if is_edit %}/usuarios/{{ user_obj.id }}/{% else %}/usuarios/{% endif %}">Regresar</a><button class="btn btn-primary" type="submit">Guardar</button></div>
+    </section>
+
+    {% if form.non_field_errors %}<div class="form-errors full-width">{{ form.non_field_errors }}</div>{% endif %}
+
+    <section class="user-form-section">
+      <div class="user-form-section-heading"><span class="detail-kicker">Cuenta</span><h3>Datos del usuario</h3><p>Información básica de identificación y contacto.</p></div>
+      <div class="user-form-grid">
+        {% for field in form %}{% if field.name == 'username' or field.name == 'first_name' or field.name == 'last_name' or field.name == 'email' or field.name == 'telefono' %}<div class="form-group user-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endif %}{% endfor %}
+      </div>
+    </section>
+
+    <section class="user-form-section">
+      <div class="user-form-section-heading"><span class="detail-kicker">Acceso</span><h3>Rol y estado</h3><p>Define el rol, yonke asociado y si la cuenta queda activa.</p></div>
+      <div class="user-form-grid">
+        {% for field in form %}{% if field.name == 'rol' or field.name == 'yonke' or field.name == 'activo' or field.name == 'password' %}<div class="form-group user-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.name == 'password' and is_edit %}<p class="field-help">Déjala vacía si no deseas cambiar la contraseña.</p>{% endif %}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endif %}{% endfor %}
+      </div>
+    </section>
+
+    <div class="user-form-actions"><a class="btn btn-secondary" href="{% if is_edit %}/usuarios/{{ user_obj.id }}/{% else %}/usuarios/{% endif %}">Cancelar</a><button class="btn btn-primary" type="submit">Guardar</button></div>
+  </form>
+</section>
 {% endblock %}

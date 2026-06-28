@@ -2555,3 +2555,210 @@ img.catalog-logo,
 
     .catalog-form-actions { position: static; justify-content: end; }
 }
+
+/* Phase 9: mobile-first user administration */
+.users-hero,
+.user-form-hero,
+.user-form-section,
+.user-form-actions,
+.user-card {
+    background: var(--color-surface);
+    border: 1px solid rgba(216, 225, 221, 0.94);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xs);
+}
+
+.users-hero,
+.user-form-hero {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(204, 251, 241, 0.24));
+}
+
+.users-hero h2,
+.user-form-hero h2,
+.user-form-section-heading h3 {
+    margin: 6px 0 0;
+    color: var(--color-heading);
+    font-weight: 850;
+    letter-spacing: -0.04em;
+}
+
+.users-hero h2,
+.user-form-hero h2 {
+    font-size: clamp(28px, 8vw, 42px);
+    line-height: 1.06;
+}
+
+.users-hero p,
+.user-form-hero p,
+.user-form-section-heading p {
+    margin: 8px 0 0;
+    color: var(--color-muted-strong);
+    font-weight: 700;
+}
+
+.users-filter-form,
+.users-card-list,
+.user-form,
+.user-form-grid {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.users-filter-search {
+    grid-column: 1 / -1;
+}
+
+.users-filter-actions,
+.user-card-actions,
+.users-table-actions,
+.user-form-hero-actions,
+.user-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+.users-filter-actions .btn,
+.user-card-actions .btn,
+.user-form-hero-actions .btn,
+.user-form-actions .btn {
+    width: 100%;
+}
+
+.user-card {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-4);
+}
+
+.user-card-main {
+    display: grid;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.user-card h3 {
+    margin: 0;
+    color: var(--color-heading);
+    font-size: 20px;
+    font-weight: 850;
+    letter-spacing: -0.03em;
+}
+
+.user-card p {
+    margin: 0;
+    color: var(--color-muted-strong);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.user-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.user-card-meta {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: var(--space-3);
+    background: var(--color-surface-subtle);
+    border: 1px solid rgba(216, 225, 221, 0.86);
+    border-radius: var(--radius-md);
+}
+
+.user-card-meta span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.user-card-meta strong {
+    color: var(--color-heading);
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.users-table-wrap {
+    display: none;
+}
+
+.user-detail-hero .detail-hero-emblem {
+    min-height: 180px;
+}
+
+.user-form-shell {
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.user-form-section {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-4);
+}
+
+.user-form-section-heading {
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.user-field.has-error .form-control,
+.user-field.has-error .form-select,
+.user-field.has-error .form-textarea {
+    border-color: rgba(217, 45, 32, 0.68);
+    background: #fffafa;
+}
+
+.user-form .field-error {
+    padding: 8px 10px;
+    background: var(--color-danger-soft);
+    border: 1px solid rgba(217, 45, 32, 0.18);
+    border-radius: var(--radius-sm);
+}
+
+.user-form-actions {
+    position: sticky;
+    bottom: var(--space-3);
+    z-index: 5;
+    padding: var(--space-3);
+    box-shadow: var(--shadow-sm);
+}
+
+@media (min-width: 640px) {
+    .users-filter-form,
+    .user-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .users-filter-actions .btn,
+    .user-card-actions .btn,
+    .user-form-hero-actions .btn,
+    .user-form-actions .btn { width: auto; }
+    .user-card { grid-template-columns: minmax(0, 1fr) minmax(180px, 0.42fr); align-items: start; }
+    .user-card-actions { grid-column: 1 / -1; }
+}
+
+@media (min-width: 1024px) {
+    .users-hero,
+    .user-form-hero { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+    .users-card-list { display: none; }
+    .users-table-wrap { display: block; }
+
+    .user-form-section {
+        grid-template-columns: minmax(220px, 0.35fr) minmax(0, 1fr);
+        padding: var(--space-5);
+    }
+
+    .user-form-section-heading {
+        padding: 0 var(--space-4) 0 0;
+        border-right: 1px solid var(--color-border);
+        border-bottom: 0;
+    }
+
+    .user-form-actions { position: static; justify-content: end; }
+}
