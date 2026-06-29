@@ -2,4 +2,31 @@
 {% block title %}Perfil{% endblock %}
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><span>Perfil</span>{% endblock %}
 {% block page_title %}<h1>Mi perfil</h1>{% endblock %}
-{% block content %}<section class="card section-stack"><div class="details-grid"><div><strong>Username:</strong> {{ request.user.username }}</div><div><strong>Nombre:</strong> {{ request.user.first_name|default:'Sin datos' }}</div><div><strong>Apellido:</strong> {{ request.user.last_name|default:'Sin datos' }}</div><div><strong>Email:</strong> {{ request.user.email|default:'Sin datos' }}</div><div><strong>Rol:</strong> {{ profile.get_rol_display }}</div><div><strong>Yonke:</strong> {% if profile.yonke %}{{ profile.yonke.nombre }}{% else %}Sin datos{% endif %}</div><div><strong>Teléfono:</strong> {{ profile.telefono|default:'Sin datos' }}</div><div><strong>Activo:</strong> {{ profile.activo|yesno:"Sí,No" }}</div><div><strong>Registro:</strong> {{ request.user.date_joined|date:"Y-m-d H:i" }}</div><div><strong>Último acceso:</strong> {{ request.user.last_login|date:"Y-m-d H:i"|default:'Sin datos' }}</div></div><div class="inline-actions"><a class="btn btn-primary" href="/configuracion/">Configuración</a></div></section>{% endblock %}
+{% block content %}
+<section class="detail-hero section-stack account-detail-hero">
+  <div class="detail-hero-media"><div class="detail-hero-emblem" aria-hidden="true">{{ request.user.username|first|upper }}</div></div>
+  <div class="detail-hero-content">
+    <span class="detail-kicker">Perfil de usuario</span>
+    <div class="detail-title-row"><h2 class="detail-title">{{ request.user.username }}</h2><span class="badge badge-info">{{ profile.get_rol_display }}</span>{% if profile.activo %}<span class="badge badge-success">Activo</span>{% else %}<span class="badge badge-muted">Inactivo</span>{% endif %}</div>
+    <p class="detail-subtitle">Información de cuenta registrada en Red de Yonkes.</p>
+    <div class="detail-meta-row"><span>{{ request.user.email|default:'Sin email' }}</span><span>{% if profile.yonke %}{{ profile.yonke.nombre }}{% else %}Sin yonke asociado{% endif %}</span><span>{{ profile.telefono|default:'Sin teléfono' }}</span></div>
+  </div>
+  <div class="detail-actions"><a class="btn btn-primary" href="/configuracion/">Configuración</a></div>
+</section>
+
+<section class="card detail-panel section-stack">
+  <header class="card-header"><div><h2 class="card-title">Datos del usuario</h2><p class="list-helper-text">Resumen de datos visibles de tu perfil.</p></div></header>
+  <div class="detail-grid">
+    <div class="detail-field"><span class="detail-label">Username</span><span class="detail-value">{{ request.user.username }}</span></div>
+    <div class="detail-field"><span class="detail-label">Nombre</span><span class="detail-value">{{ request.user.first_name|default:'Sin datos' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Apellido</span><span class="detail-value">{{ request.user.last_name|default:'Sin datos' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Email</span><span class="detail-value">{{ request.user.email|default:'Sin datos' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Rol</span><span class="detail-value">{{ profile.get_rol_display }}</span></div>
+    <div class="detail-field"><span class="detail-label">Yonke</span><span class="detail-value">{% if profile.yonke %}{{ profile.yonke.nombre }}{% else %}Sin datos{% endif %}</span></div>
+    <div class="detail-field"><span class="detail-label">Teléfono</span><span class="detail-value">{{ profile.telefono|default:'Sin datos' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Activo</span><span class="detail-value">{{ profile.activo|yesno:"Sí,No" }}</span></div>
+    <div class="detail-field"><span class="detail-label">Registro</span><span class="detail-value">{{ request.user.date_joined|date:"Y-m-d H:i" }}</span></div>
+    <div class="detail-field"><span class="detail-label">Último acceso</span><span class="detail-value">{{ request.user.last_login|date:"Y-m-d H:i"|default:'Sin datos' }}</span></div>
+  </div>
+</section>
+{% endblock %}
