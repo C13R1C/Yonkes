@@ -3029,7 +3029,21 @@ img.catalog-logo,
     background: linear-gradient(135deg, rgba(238, 244, 241, 0.98), rgba(204, 251, 241, 0.42));
 }
 
-.auth-brand-mark { width: 48px; height: 48px; font-weight: 850; }
+.auth-system-chip {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 36px;
+    align-items: center;
+    padding: 6px 12px;
+    color: var(--color-primary);
+    font-size: 12px;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(216, 225, 221, 0.9);
+    border-radius: var(--radius-pill);
+}
 .auth-visual h1 { margin: 0; font-size: clamp(28px, 9vw, 46px); letter-spacing: -0.05em; line-height: 1; }
 .auth-visual p { max-width: 34rem; margin: 0; color: var(--color-muted-strong); font-weight: 700; }
 

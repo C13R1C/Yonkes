@@ -4,7 +4,7 @@
 {% block page_title %}<h1>Configuración</h1>{% endblock %}
 {% block content %}
 <section class="account-form-shell section-stack">
-  <form method="post" class="account-settings-form account-form" novalidate>
+  <form method="post" class="account-settings-form account-form">
     {% csrf_token %}
     <section class="account-form-hero">
       <div><span class="detail-kicker">Configuración de perfil</span><h2>Actualizar información</h2><p>Ajusta únicamente los campos disponibles en el formulario actual.</p></div>
