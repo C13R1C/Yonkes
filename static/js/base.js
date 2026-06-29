@@ -10,12 +10,17 @@
     const searchFilterToggle = document.querySelector("[data-toggle-search-filters]");
     const searchFilterPanel = document.querySelector("#advanced-search-filters");
     let feedbackTimer = null;
+    let lastSidebarTrigger = null;
 
-    function setSidebar(open) {
+    function setSidebar(open, options) {
+        const wasOpen = body.classList.contains("sidebar-open");
+        const shouldRestoreFocus = options && options.restoreFocus;
+
         body.classList.toggle("sidebar-open", open);
 
         if (sidebarToggle) {
             sidebarToggle.setAttribute("aria-expanded", String(open));
+            sidebarToggle.setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
         }
 
         if (sidebarBackdrop) {
@@ -23,12 +28,16 @@
         }
 
         if (open) {
+            lastSidebarTrigger = document.activeElement;
             const activeLink = document.querySelector(".sidebar-link.is-active") || document.querySelector(".sidebar-link");
             if (activeLink && window.matchMedia("(max-width: 1024px)").matches) {
                 window.setTimeout(function () {
                     activeLink.focus({ preventScroll: true });
                 }, 120);
             }
+        } else if (wasOpen && shouldRestoreFocus && lastSidebarTrigger && typeof lastSidebarTrigger.focus === "function") {
+            lastSidebarTrigger.focus({ preventScroll: true });
+            lastSidebarTrigger = null;
         }
     }
 
@@ -63,7 +72,7 @@
 
     if (sidebarBackdrop) {
         sidebarBackdrop.addEventListener("click", function () {
-            setSidebar(false);
+            setSidebar(false, { restoreFocus: true });
         });
     }
 
@@ -78,7 +87,7 @@
     sidebarLinks.forEach(function (link) {
         link.addEventListener("click", function () {
             if (window.matchMedia("(max-width: 1024px)").matches) {
-                setSidebar(false);
+                setSidebar(false, { restoreFocus: true });
             }
         });
     });
@@ -131,7 +140,7 @@
 
     document.addEventListener("keydown", function (event) {
         if (event.key === "Escape") {
-            setSidebar(false);
+            setSidebar(false, { restoreFocus: true });
             closeUserMenu();
         }
     });
