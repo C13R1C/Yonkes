@@ -1,3 +1,53 @@
 {% load static %}
-<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Iniciar sesión</title><link rel="stylesheet" href="{% static 'css/base.css' %}"></head>
-<body><main class="auth-shell"><section class="card auth-card"><h1>Red de Yonkes</h1><h2 class="card-title">Iniciar sesión</h2>{% if error %}<div class="form-errors">{{ error }}</div>{% endif %}<form method="post" class="form-grid">{% csrf_token %}<input type="hidden" name="next" value="{{ next }}"><div class="form-group full-width"><label class="form-label">Usuario</label><input class="form-control" name="username" required></div><div class="form-group full-width"><label class="form-label">Contraseña</label><input class="form-control" name="password" type="password" required></div><div class="form-group full-width inline-actions"><button class="btn btn-primary" type="submit">Iniciar sesión</button><a class="btn btn-secondary" href="/register/">Crear cuenta</a></div></form></section></main></body></html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión</title>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <section class="auth-panel" aria-labelledby="login-title">
+      <div class="auth-visual" aria-hidden="true">
+        <div class="auth-system-chip">Red de Yonkes</div>
+        <span class="detail-kicker">Acceso seguro</span>
+        <h1>Red de Yonkes</h1>
+        <p>Entrada profesional para administrar operaciones, inventario y seguimiento del sistema.</p>
+        <div class="auth-visual-card">
+          <span>Sesión protegida</span>
+          <strong>Conserva tus flujos y permisos actuales</strong>
+        </div>
+      </div>
+
+      <div class="card auth-card">
+        <div class="auth-card-header">
+          <span class="detail-kicker">Bienvenido</span>
+          <h2 id="login-title" class="card-title">Iniciar sesión</h2>
+          <p>Ingresa con tus credenciales para continuar en Red de Yonkes.</p>
+        </div>
+
+        {% if error %}<div class="form-errors" role="alert">{{ error }}</div>{% endif %}
+
+        <form method="post" class="form-grid auth-form">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ next }}">
+          <div class="form-group full-width">
+            <label class="form-label" for="id_username">Usuario</label>
+            <input class="form-control" id="id_username" name="username" autocomplete="username" required>
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label" for="id_password">Contraseña</label>
+            <input class="form-control" id="id_password" name="password" type="password" autocomplete="current-password" required>
+          </div>
+          <div class="form-group full-width auth-actions">
+            <button class="btn btn-primary" type="submit">Iniciar sesión</button>
+            <a class="btn btn-secondary" href="/register/">Crear cuenta</a>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

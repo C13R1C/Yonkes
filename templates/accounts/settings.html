@@ -2,4 +2,32 @@
 {% block title %}Configuración{% endblock %}
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/perfil/">Perfil</a><span>/</span><span>Configuración</span>{% endblock %}
 {% block page_title %}<h1>Configuración</h1>{% endblock %}
-{% block content %}<section class="card section-stack"><form method="post" class="form-grid">{% csrf_token %}{% if form.non_field_errors %}<div class="form-errors full-width">{{ form.non_field_errors }}</div>{% endif %}{% for field in form %}<div class="form-group full-width"><label class="form-label">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endfor %}<div class="form-group full-width inline-actions"><button class="btn btn-primary" type="submit">Guardar cambios</button><a class="btn btn-secondary" href="/perfil/">Cancelar</a></div></form></section>{% endblock %}
+{% block content %}
+<section class="account-form-shell section-stack">
+  <form method="post" class="account-settings-form account-form">
+    {% csrf_token %}
+    <section class="account-form-hero">
+      <div><span class="detail-kicker">Configuración de perfil</span><h2>Actualizar información</h2><p>Ajusta únicamente los campos disponibles en el formulario actual.</p></div>
+      <div class="account-form-actions"><a class="btn btn-secondary" href="/perfil/">Cancelar</a><button class="btn btn-primary" type="submit">Guardar cambios</button></div>
+    </section>
+
+    {% if form.non_field_errors %}<div class="form-errors full-width" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+
+    <section class="card account-form-section">
+      <header class="card-header"><div><h2 class="card-title">Datos editables</h2><p class="list-helper-text">Se conservan los campos, validaciones y guardado existentes.</p></div></header>
+      <div class="account-form-grid">
+        {% for field in form %}
+          <div class="form-group{% if field.errors %} has-error{% endif %}">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<div class="field-help">{{ field.help_text }}</div>{% endif %}
+            {% if field.errors %}<div class="field-error" role="alert">{{ field.errors|striptags }}</div>{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <div class="account-form-footer"><a class="btn btn-secondary" href="/perfil/">Cancelar</a><button class="btn btn-primary" type="submit">Guardar cambios</button></div>
+  </form>
+</section>
+{% endblock %}
