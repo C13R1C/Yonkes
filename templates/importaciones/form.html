@@ -3,14 +3,24 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/importaciones/">Importaciones</a><span>/</span><span>Nueva</span>{% endblock %}
 {% block page_title %}<h1>Nueva importación</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack">
-  <div class="form-errors full-width">{{ aviso_procesamiento }}</div>
-  <form method="post" enctype="multipart/form-data" class="form-grid">{% csrf_token %}
+<section class="admin-ops-form-shell">
+  <form method="post" enctype="multipart/form-data" class="admin-ops-form">{% csrf_token %}
+    <section class="admin-ops-hero">
+      <div><span class="detail-kicker">Carga administrativa</span><h2>Nueva importación</h2><p>Registra el archivo para procesamiento posterior sin cambiar la lógica actual del sistema.</p></div>
+      <div class="admin-ops-hero-actions"><a class="btn btn-secondary" href="/importaciones/">Cancelar</a><button class="btn btn-primary" type="submit">Registrar importación</button></div>
+    </section>
+
+    {% if aviso_procesamiento %}<div class="admin-ops-notice">{{ aviso_procesamiento }}</div>{% endif %}
     {% if form.non_field_errors %}<div class="form-errors full-width">{{ form.non_field_errors }}</div>{% endif %}
-    {% for field in form %}
-      <div class="form-group full-width"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>
-    {% endfor %}
-    <div class="form-group full-width inline-actions"><a class="btn btn-secondary" href="/importaciones/">Cancelar</a><button class="btn btn-primary" type="submit">Registrar importación</button></div>
+
+    <section class="admin-ops-form-section">
+      <div class="admin-ops-form-heading"><span class="detail-kicker">Archivo</span><h3>Datos de importación</h3><p>Selecciona el yonke, tipo de carga y archivo solicitado por el formulario.</p></div>
+      <div class="admin-ops-form-grid">
+        {% for field in form %}<div class="form-group admin-ops-field{% if field.errors %} has-error{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}</div>{% endfor %}
+      </div>
+    </section>
+
+    <div class="admin-ops-form-actions"><a class="btn btn-secondary" href="/importaciones/">Cancelar</a><button class="btn btn-primary" type="submit">Registrar importación</button></div>
   </form>
 </section>
 {% endblock %}

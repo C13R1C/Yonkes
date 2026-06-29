@@ -3,54 +3,82 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><span>Búsqueda</span>{% endblock %}
 {% block page_title %}<h1>Buscar piezas</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack">
-  <header class="card-header"><h2 class="card-title">Filtros de búsqueda</h2></header>
-  <form method="get" class="form-grid">
-    <div class="form-group"><label class="form-label">Pieza</label><input class="form-control" name="pieza" value="{{ filters.pieza }}"></div>
-    <div class="form-group"><label class="form-label">Marca</label><select class="form-select" name="marca"><option value="">Todas</option>{% for marca in marcas %}<option value="{{ marca.nombre }}" {% if filters.marca == marca.nombre %}selected{% endif %}>{{ marca.nombre }}</option>{% endfor %}</select></div>
-    <div class="form-group"><label class="form-label">Modelo</label><input class="form-control" name="modelo" value="{{ filters.modelo }}"></div>
-    <div class="form-group"><label class="form-label">Año</label><input class="form-control" name="anio" type="number" value="{{ filters.anio }}"></div>
-    <div class="form-group"><label class="form-label">Categoría</label><select class="form-select" name="categoria"><option value="">Todas</option>{% for c in categorias %}<option value="{{ c.nombre }}" {% if filters.categoria == c.nombre %}selected{% endif %}>{{ c.nombre }}</option>{% endfor %}</select></div>
-    <div class="form-group"><label class="form-label">Yonke</label><select class="form-select" name="yonke"><option value="">Todos</option>{% for y in yonkes %}<option value="{{ y.nombre }}" {% if filters.yonke == y.nombre %}selected{% endif %}>{{ y.nombre }}</option>{% endfor %}</select></div>
-    <div class="form-group"><label class="form-label">Condición</label><select class="form-select" name="condicion"><option value="">Todas</option>{% for value,label in condicion_choices %}<option value="{{ value }}" {% if filters.condicion == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
-    <div class="form-group"><label class="form-label">Estatus</label><select class="form-select" name="estatus"><option value="">Todos</option>{% for value,label in estatus_choices %}<option value="{{ value }}" {% if filters.estatus == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
-    <div class="form-group full-width"><label><input class="form-checkbox" type="checkbox" name="solo_disponibles" {% if filters.solo_disponibles %}checked{% endif %}> Solo disponibles</label></div>
-    <div class="form-group full-width inline-actions"><button class="btn btn-primary" type="submit">Buscar</button><a class="btn btn-secondary" href="/busqueda/">Limpiar filtros</a></div>
+<section class="search-shell section-stack">
+  <form method="get" class="search-form" data-search-filters>
+    <div class="search-hero-panel">
+      <div class="search-hero-copy">
+        <span class="detail-kicker">Marketplace de piezas</span>
+        <h2>Encuentra inventario disponible en segundos</h2>
+        <p>Busca por pieza y afina por vehículo, categoría, estado o yonke.</p>
+      </div>
+      <div class="search-main-control">
+        <label class="sr-only" for="search-pieza-input">Pieza</label>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"></path></svg>
+        <input id="search-pieza-input" class="search-main-input" name="pieza" value="{{ filters.pieza }}" placeholder="Ej. alternador, defensa, faro..." autocomplete="off">
+        <button class="btn btn-primary search-main-button" type="submit">Buscar</button>
+      </div>
+      <div class="search-quick-actions">
+        <button class="btn btn-secondary search-filter-toggle" type="button" data-toggle-search-filters aria-expanded="true" aria-controls="advanced-search-filters">Filtros</button>
+        <a class="btn btn-secondary" href="/busqueda/">Limpiar filtros</a>
+      </div>
+    </div>
+
+    <div class="search-filter-panel" id="advanced-search-filters">
+      <div class="search-filter-group">
+        <h3>Vehículo</h3>
+        <div class="form-grid search-filter-grid">
+          <div class="form-group"><label class="form-label">Marca</label><select class="form-select" name="marca"><option value="">Todas</option>{% for marca in marcas %}<option value="{{ marca.nombre }}" {% if filters.marca == marca.nombre %}selected{% endif %}>{{ marca.nombre }}</option>{% endfor %}</select></div>
+          <div class="form-group"><label class="form-label">Modelo</label><input class="form-control" name="modelo" value="{{ filters.modelo }}"></div>
+          <div class="form-group"><label class="form-label">Año</label><input class="form-control" name="anio" type="number" value="{{ filters.anio }}"></div>
+        </div>
+      </div>
+      <div class="search-filter-group">
+        <h3>Pieza</h3>
+        <div class="form-grid search-filter-grid">
+          <div class="form-group"><label class="form-label">Categoría</label><select class="form-select" name="categoria"><option value="">Todas</option>{% for c in categorias %}<option value="{{ c.nombre }}" {% if filters.categoria == c.nombre %}selected{% endif %}>{{ c.nombre }}</option>{% endfor %}</select></div>
+          <div class="form-group"><label class="form-label">Condición</label><select class="form-select" name="condicion"><option value="">Todas</option>{% for value,label in condicion_choices %}<option value="{{ value }}" {% if filters.condicion == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+          <div class="form-group"><label class="form-label">Estatus</label><select class="form-select" name="estatus"><option value="">Todos</option>{% for value,label in estatus_choices %}<option value="{{ value }}" {% if filters.estatus == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        </div>
+      </div>
+      <div class="search-filter-group">
+        <h3>Ubicación y disponibilidad</h3>
+        <div class="form-grid search-filter-grid">
+          <div class="form-group"><label class="form-label">Yonke</label><select class="form-select" name="yonke"><option value="">Todos</option>{% for y in yonkes %}<option value="{{ y.nombre }}" {% if filters.yonke == y.nombre %}selected{% endif %}>{{ y.nombre }}</option>{% endfor %}</select></div>
+          <div class="form-group search-checkbox-field"><label><input class="form-checkbox" type="checkbox" name="solo_disponibles" {% if filters.solo_disponibles %}checked{% endif %}> Solo disponibles</label></div>
+          <div class="form-group search-filter-actions"><button class="btn btn-primary" type="submit">Aplicar filtros</button><a class="btn btn-secondary" href="/busqueda/">Limpiar</a></div>
+        </div>
+      </div>
+    </div>
   </form>
 </section>
 
-<section class="card">
-  <header class="card-header"><h2 class="card-title">Resultados</h2></header>
+<section class="search-results-section">
+  <header class="search-results-header">
+    <div><span class="detail-kicker">Resultados</span><h2>{% if resultados %}Piezas encontradas{% else %}Resultados de búsqueda{% endif %}</h2></div>
+    {% if hay_filtros %}<span class="badge badge-info">Filtros activos</span>{% endif %}
+  </header>
   {% if resultados %}
-    <div class="results-grid">
+    <div class="search-results-grid">
       {% for pieza in resultados %}
-      <article class="card result-card">
-        <div class="card-header"><h3 class="card-title">{{ pieza.nombre }}</h3><a class="btn btn-secondary" href="/piezas/{{ pieza.id }}/">Ver detalle</a></div>
-        <div>{% if pieza.imagen_principal %}<img class="media-thumb" src="{{ pieza.imagen_principal.url }}" alt="{{ pieza.nombre }}">{% elif pieza.vehiculo and pieza.vehiculo.imagen_principal %}<img class="media-thumb" src="{{ pieza.vehiculo.imagen_principal.url }}" alt="{{ pieza.vehiculo }}">{% else %}<span class="media-thumb media-placeholder">Sin imagen</span>{% endif %}</div>
-        {% if pieza.marca_compatible.logo %}<div><img class="brand-logo" src="{{ pieza.marca_compatible.logo.url }}" alt="{{ pieza.marca_compatible.nombre }}"></div>{% endif %}
-        <div class="details-grid">
-          <div><strong>Alias local:</strong> {{ pieza.alias_local|default:'—' }}</div>
-          <div><strong>Categoría:</strong> {{ pieza.categoria.nombre|default:'—' }}</div>
-          <div><strong>Condición:</strong> <span class="badge badge-info">{{ pieza.get_condicion_display }}</span></div>
-          <div><strong>Estatus:</strong> <span class="badge badge-success">{{ pieza.get_estatus_display }}</span></div>
-          <div><strong>Cantidad:</strong> {{ pieza.cantidad }}</div>
-          <div><strong>Yonke propietario:</strong> {{ pieza.yonke.nombre }}</div>
-          <div><strong>Vehículo:</strong> {% if pieza.vehiculo %}{{ pieza.vehiculo }}{% else %}—{% endif %}</div>
-          <div><strong>Compatible:</strong> {{ pieza.marca_compatible.nombre|default:pieza.marca_texto|default:'—' }} {{ pieza.modelo_compatible.nombre|default:pieza.modelo_texto|default:'' }} {% if pieza.anio_inicio or pieza.anio_fin %}({{ pieza.anio_inicio|default:'?' }}-{{ pieza.anio_fin|default:'?' }}){% endif %}</div>
-          <div><strong>Precio:</strong> {% if pieza.precio_visible %}${{ pieza.precio|default:'0.00' }}{% else %}<span class="badge badge-muted">Precio no visible</span>{% endif %}</div>
-          <div class="full-width"><strong>Contacto:</strong>
-            {% if pieza.yonke.mostrar_contacto %}
-              Tel: {{ pieza.yonke.telefono|default:'—' }} | WhatsApp: {{ pieza.yonke.whatsapp|default:'—' }}
-            {% else %}
-              <span class="badge badge-muted">Contacto no público</span>
-            {% endif %}
-          </div>
+      <article class="search-result-card">
+        <div class="search-result-media">{% if pieza.imagen_principal %}<img src="{{ pieza.imagen_principal.url }}" alt="{{ pieza.nombre }}">{% elif pieza.vehiculo and pieza.vehiculo.imagen_principal %}<img src="{{ pieza.vehiculo.imagen_principal.url }}" alt="{{ pieza.vehiculo }}">{% else %}<span>Sin imagen</span>{% endif %}</div>
+        <div class="search-result-body">
+          <div class="search-result-topline"><span>{{ pieza.yonke.nombre }}</span><span>Cant. {{ pieza.cantidad }}</span></div>
+          <div class="search-result-title-row"><h3>{{ pieza.nombre }}</h3><a class="btn btn-secondary" href="/piezas/{{ pieza.id }}/">Ver detalle</a></div>
+          <div class="search-result-badges"><span class="badge {% if pieza.condicion == 'nueva' %}badge-success{% elif pieza.condicion == 'usada' or pieza.condicion == 'reparada' %}badge-warning{% elif pieza.condicion == 'danada' or pieza.condicion == 'para_reparacion' %}badge-danger{% else %}badge-muted{% endif %}">{{ pieza.get_condicion_display }}</span><span class="badge {% if pieza.estatus == 'disponible' %}badge-success{% elif pieza.estatus == 'apartada' or pieza.estatus == 'pendiente_revision' %}badge-warning{% elif pieza.estatus == 'vendida' or pieza.estatus == 'danada' or pieza.estatus == 'bloqueada' or pieza.estatus == 'agotada' %}badge-danger{% else %}badge-muted{% endif %}">{{ pieza.get_estatus_display }}</span></div>
+          <dl class="search-result-facts">
+            <div><dt>Categoría</dt><dd>{{ pieza.categoria.nombre|default:'—' }}</dd></div>
+            <div><dt>Vehículo</dt><dd>{% if pieza.vehiculo %}{{ pieza.vehiculo }}{% else %}—{% endif %}</dd></div>
+            <div><dt>Compatible</dt><dd>{{ pieza.marca_compatible.nombre|default:pieza.marca_texto|default:'—' }} {{ pieza.modelo_compatible.nombre|default:pieza.modelo_texto|default:'' }} {% if pieza.anio_inicio or pieza.anio_fin %}({{ pieza.anio_inicio|default:'?' }}-{{ pieza.anio_fin|default:'?' }}){% endif %}</dd></div>
+            <div><dt>Precio</dt><dd>{% if pieza.precio_visible %}${{ pieza.precio|default:'0.00' }}{% else %}<span class="badge badge-muted">Precio no visible</span>{% endif %}</dd></div>
+          </dl>
+          <div class="search-result-contact"><strong>Contacto:</strong> {% if pieza.yonke.mostrar_contacto %}<span>Tel: {{ pieza.yonke.telefono|default:'—' }} | WhatsApp: {{ pieza.yonke.whatsapp|default:'—' }}</span>{% else %}<span class="badge badge-muted">Contacto no público</span>{% endif %}</div>
         </div>
       </article>
       {% endfor %}
     </div>
   {% else %}
-    <div class="empty-state">{% if hay_filtros %}No se encontraron piezas con esos filtros.{% else %}Ingresa filtros para buscar piezas.{% endif %}</div>
+    <div class="empty-state search-empty"><strong>{% if hay_filtros %}No encontramos resultados con los filtros actuales.{% else %}Ingresa una búsqueda para encontrar piezas.{% endif %}</strong><span>{% if hay_filtros %}Prueba modificando los filtros o limpiando la búsqueda.{% else %}Usa el buscador principal o abre los filtros para afinar tu consulta.{% endif %}</span></div>
   {% endif %}
 </section>
 {% endblock %}

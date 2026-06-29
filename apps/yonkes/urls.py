@@ -8,3 +8,4 @@ router = DefaultRouter()
 router.register(r"yonkes", YonkeViewSet, basename="api-yonkes")
 
 urlpatterns = router.urls
+

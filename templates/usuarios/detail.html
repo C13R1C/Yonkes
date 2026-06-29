@@ -3,21 +3,32 @@
 {% block breadcrumbs %}<a href="/">Inicio</a><span>/</span><a href="/usuarios/">Usuarios</a><span>/</span><span>Detalle</span>{% endblock %}
 {% block page_title %}<h1>{% if user_obj.first_name or user_obj.last_name %}{{ user_obj.first_name }} {{ user_obj.last_name }}{% else %}{{ user_obj.username }}{% endif %}</h1>{% endblock %}
 {% block content %}
-<section class="card section-stack">
-  <div class="details-grid">
-    <div><strong>Usuario:</strong> {{ user_obj.username }}</div>
-    <div><strong>Nombre:</strong> {{ user_obj.first_name|default:'Sin datos' }}</div>
-    <div><strong>Apellido:</strong> {{ user_obj.last_name|default:'Sin datos' }}</div>
-    <div><strong>Correo electrónico:</strong> {{ user_obj.email|default:'Sin datos' }}</div>
-    <div><strong>Rol:</strong> {{ profile.get_rol_display|default:'Sin datos' }}</div>
-    <div><strong>Yonke asociado:</strong> {% if profile.yonke %}{{ profile.yonke.nombre }}{% else %}Sin datos{% endif %}</div>
-    <div><strong>Teléfono:</strong> {{ profile.telefono|default:'Sin datos' }}</div>
-    <div><strong>Activo:</strong> {{ profile.activo|yesno:"Sí,No" }}</div>
-    <div><strong>Staff:</strong> {{ user_obj.is_staff|yesno:"Sí,No" }}</div>
-    <div><strong>Superusuario:</strong> {{ user_obj.is_superuser|yesno:"Sí,No" }}</div>
-    <div><strong>Fecha de registro:</strong> {{ user_obj.date_joined|date:"Y-m-d H:i" }}</div>
-    <div><strong>Último acceso:</strong> {{ user_obj.last_login|date:"Y-m-d H:i"|default:'Sin datos' }}</div>
+<section class="detail-hero section-stack user-detail-hero">
+  <div class="detail-hero-media"><div class="detail-hero-emblem" aria-hidden="true">{{ user_obj.username|first|upper }}</div></div>
+  <div class="detail-hero-content">
+    <span class="detail-kicker">Usuario</span>
+    <div class="detail-title-row"><h2 class="detail-title">{% if user_obj.first_name or user_obj.last_name %}{{ user_obj.first_name }} {{ user_obj.last_name }}{% else %}{{ user_obj.username }}{% endif %}</h2><span class="badge badge-info">{{ profile.get_rol_display|default:'Sin datos' }}</span><span class="badge {% if profile.activo %}badge-success{% else %}badge-muted{% endif %}">{% if profile.activo %}Activo{% else %}Inactivo{% endif %}</span></div>
+    <p class="detail-subtitle">{{ user_obj.email|default:'Sin correo electrónico' }}</p>
+    <div class="detail-meta-row"><span>@{{ user_obj.username }}</span><span>{% if profile.yonke %}{{ profile.yonke.nombre }}{% else %}Sin yonke asociado{% endif %}</span><span>{{ profile.telefono|default:'Sin teléfono' }}</span></div>
   </div>
-  <div class="inline-actions"><a class="btn btn-secondary" href="/usuarios/">Regresar</a><a class="btn btn-primary" href="/usuarios/{{ user_obj.id }}/editar/">Editar</a></div>
+  <div class="detail-actions"><a class="btn btn-secondary" href="/usuarios/">Regresar</a><a class="btn btn-primary" href="/usuarios/{{ user_obj.id }}/editar/">Editar</a></div>
+</section>
+
+<section class="card detail-panel">
+  <header class="card-header"><div><h2 class="card-title">Información del usuario</h2><p class="list-helper-text">Datos visibles de la cuenta y perfil asociado.</p></div></header>
+  <div class="detail-grid">
+    <div class="detail-field"><span class="detail-label">Usuario</span><span class="detail-value detail-mono">{{ user_obj.username }}</span></div>
+    <div class="detail-field"><span class="detail-label">Nombre</span><span class="detail-value">{{ user_obj.first_name|default:'Sin datos' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Apellido</span><span class="detail-value">{{ user_obj.last_name|default:'Sin datos' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Correo electrónico</span><span class="detail-value">{{ user_obj.email|default:'Sin datos' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Rol</span><span class="detail-value">{{ profile.get_rol_display|default:'Sin datos' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Yonke asociado</span><span class="detail-value">{% if profile.yonke %}{{ profile.yonke.nombre }}{% else %}Sin datos{% endif %}</span></div>
+    <div class="detail-field"><span class="detail-label">Teléfono</span><span class="detail-value">{{ profile.telefono|default:'Sin datos' }}</span></div>
+    <div class="detail-field"><span class="detail-label">Activo</span><span class="detail-value">{{ profile.activo|yesno:"Sí,No" }}</span></div>
+    <div class="detail-field"><span class="detail-label">Staff</span><span class="detail-value">{{ user_obj.is_staff|yesno:"Sí,No" }}</span></div>
+    <div class="detail-field"><span class="detail-label">Superusuario</span><span class="detail-value">{{ user_obj.is_superuser|yesno:"Sí,No" }}</span></div>
+    <div class="detail-field"><span class="detail-label">Fecha de registro</span><span class="detail-value">{{ user_obj.date_joined|date:"Y-m-d H:i" }}</span></div>
+    <div class="detail-field"><span class="detail-label">Último acceso</span><span class="detail-value">{{ user_obj.last_login|date:"Y-m-d H:i"|default:'Sin datos' }}</span></div>
+  </div>
 </section>
 {% endblock %}
