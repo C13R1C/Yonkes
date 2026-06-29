@@ -11,7 +11,7 @@
   <main class="auth-shell">
     <section class="auth-panel" aria-labelledby="login-title">
       <div class="auth-visual" aria-hidden="true">
-        <div class="brand-mark auth-brand-mark">Y</div>
+        <div class="auth-system-chip">Red de Yonkes</div>
         <span class="detail-kicker">Acceso seguro</span>
         <h1>Red de Yonkes</h1>
         <p>Entrada profesional para administrar operaciones, inventario y seguimiento del sistema.</p>
@@ -30,7 +30,7 @@
 
         {% if error %}<div class="form-errors" role="alert">{{ error }}</div>{% endif %}
 
-        <form method="post" class="form-grid auth-form" novalidate>
+        <form method="post" class="form-grid auth-form">
           {% csrf_token %}
           <input type="hidden" name="next" value="{{ next }}">
           <div class="form-group full-width">
