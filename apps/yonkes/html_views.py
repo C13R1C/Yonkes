@@ -5,6 +5,7 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounts.permissions import can_access_admin_area, can_manage_yonke, is_admin_general, is_dueno_yonke, is_empleado, user_yonke
+from apps.auditoria.services import log_action
 
 from .forms import YonkeForm
 from .models import Yonke
@@ -128,6 +129,7 @@ def yonke_create(request):
     form = YonkeForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         yonke = form.save()
+        log_action(request, accion="crear_yonke", entidad="Yonke", entidad_id=yonke.pk, yonke=yonke)
         messages.success(request, "Registro creado correctamente.")
         return redirect("yonkes_html:yonkes-detail", pk=yonke.pk)
     return render(request, "yonkes/form.html", {"active_module": "yonkes", "form": form, "is_edit": False})
@@ -140,7 +142,11 @@ def yonke_edit(request, pk):
         raise PermissionDenied
     form = YonkeForm(request.POST or None, instance=yonke)
     if request.method == "POST" and form.is_valid():
+        before = {"estatus": yonke.estatus, "mostrar_contacto": yonke.mostrar_contacto}
         yonke = form.save()
+        after = {"estatus": yonke.estatus, "mostrar_contacto": yonke.mostrar_contacto}
+        cambios = {key: {"antes": before[key], "despues": after[key]} for key in before if before[key] != after[key]}
+        log_action(request, accion="editar_yonke", entidad="Yonke", entidad_id=yonke.pk, yonke=yonke, cambios=cambios)
         messages.success(request, "Registro actualizado correctamente.")
         return redirect("yonkes_html:yonkes-detail", pk=yonke.pk)
     return render(

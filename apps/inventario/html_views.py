@@ -186,14 +186,14 @@ def vehiculo_create(request):
 
 @login_required(login_url="/login/")
 def vehiculo_edit(request, pk):
-    vehiculo = get_object_or_404(Vehiculo, pk=pk)
+    vehiculo = get_object_or_404(own_yonke_queryset_for_user(Vehiculo.objects.select_related("yonke"), request.user), pk=pk)
     if not can_edit_inventory(request.user, vehiculo):
         raise PermissionDenied
     before = Vehiculo.objects.get(pk=pk)
     form = VehiculoForm(request.POST or None, request.FILES or None, instance=vehiculo, user=request.user)
     if request.method == "POST" and form.is_valid():
         vehiculo = form.save()
-        changes = _inventory_changes(before, vehiculo, ["estatus", "visibilidad"])
+        changes = _inventory_changes(before, vehiculo, ["estatus", "visibilidad", "ubicacion_fisica", "observaciones"])
         log_action(request, accion="editar_vehiculo", entidad="Vehiculo", entidad_id=vehiculo.pk, yonke=vehiculo.yonke, cambios=changes)
         messages.success(request, "Registro actualizado correctamente.")
         return redirect("inventario_html:vehiculos-detail", pk=vehiculo.pk)
@@ -343,7 +343,7 @@ def pieza_create(request):
     vehiculo_context = None
     initial = {}
     if vehiculo_context_id:
-        vehiculo_context = get_object_or_404(Vehiculo.objects.select_related("yonke"), pk=vehiculo_context_id)
+        vehiculo_context = get_object_or_404(own_yonke_queryset_for_user(Vehiculo.objects.select_related("yonke"), request.user), pk=vehiculo_context_id)
         if not can_edit_inventory(request.user, vehiculo_context):
             raise PermissionDenied
         initial = {"vehiculo": vehiculo_context, "yonke": vehiculo_context.yonke}
@@ -373,14 +373,14 @@ def pieza_create(request):
 
 @login_required(login_url="/login/")
 def pieza_edit(request, pk):
-    pieza = get_object_or_404(Pieza, pk=pk)
+    pieza = get_object_or_404(own_yonke_queryset_for_user(Pieza.objects.select_related("yonke", "vehiculo"), request.user), pk=pk)
     if not can_edit_inventory(request.user, pieza):
         raise PermissionDenied
     before = Pieza.objects.get(pk=pk)
     form = PiezaForm(request.POST or None, request.FILES or None, instance=pieza, user=request.user)
     if request.method == "POST" and form.is_valid():
         pieza = form.save()
-        changes = _inventory_changes(before, pieza, ["estatus", "visibilidad", "precio", "precio_visible"])
+        changes = _inventory_changes(before, pieza, ["vehiculo_id", "estatus", "visibilidad", "precio", "precio_visible", "cantidad", "ubicacion", "observaciones"])
         log_action(request, accion="editar_pieza", entidad="Pieza", entidad_id=pieza.pk, yonke=pieza.yonke, cambios=changes)
         messages.success(request, "Registro actualizado correctamente.")
         return redirect("inventario_html:piezas-detail", pk=pieza.pk)

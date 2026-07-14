@@ -1,6 +1,7 @@
 from django import forms
 
 from apps.accounts.permissions import is_admin_general, user_yonke
+from apps.core.validators import validate_uploaded_xlsx
 
 from .models import ImportacionExcel
 
@@ -33,3 +34,8 @@ class ImportacionExcelForm(forms.ModelForm):
         if is_admin_general(self.user):
             return self.cleaned_data["yonke"]
         return current_yonke
+
+    def clean_archivo(self):
+        archivo = self.cleaned_data.get("archivo")
+        validate_uploaded_xlsx(archivo)
+        return archivo

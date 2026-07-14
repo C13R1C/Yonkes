@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from apps.accounts.permissions import is_admin_general, user_yonke
+from apps.auditoria.services import log_action
 from apps.yonkes.models import Yonke
 
 from .forms import AliasPiezaForm, CategoriaPiezaForm, MarcaForm, ModeloVehiculoForm, NombrePiezaForm
@@ -97,6 +98,9 @@ def _catalog_form(request, *, model, form_class, slug, title, pk=None):
         raise PermissionDenied("No tienes permiso para realizar esta acción.")
     form = form_class(request.POST or None, request.FILES or None, instance=instance, user=request.user)
     if request.method == "POST" and form.is_valid():
+        before = None
+        if instance:
+            before = {"activo": getattr(instance, "activo", None), "visibilidad": getattr(instance, "visibilidad", None)}
         obj = form.save(commit=False)
         if not pk and hasattr(obj, "yonke_id"):
             profile = request.user.profile
@@ -105,6 +109,12 @@ def _catalog_form(request, *, model, form_class, slug, title, pk=None):
             raise PermissionDenied("No tienes permiso para realizar esta acción.")
         obj.save()
         form.save_m2m()
+        if before is None:
+            log_action(request, accion="crear_catalogo", entidad=model.__name__, entidad_id=obj.pk, yonke=getattr(obj, "yonke", None), cambios={"slug": slug})
+        else:
+            after = {"activo": getattr(obj, "activo", None), "visibilidad": getattr(obj, "visibilidad", None)}
+            cambios = {key: {"antes": before[key], "despues": after[key]} for key in before if before[key] != after[key]}
+            log_action(request, accion="editar_catalogo", entidad=model.__name__, entidad_id=obj.pk, yonke=getattr(obj, "yonke", None), cambios=cambios)
         return redirect(f"catalogos-{slug}-list")
     return render(
         request,
@@ -126,7 +136,10 @@ def _catalog_delete(request, *, model, slug):
     if not can_manage_catalog_record(request.user, obj):
         messages.error(request, "No tienes permiso para realizar esta acción.")
         raise PermissionDenied("No tienes permiso para realizar esta acción.")
+    obj_pk = obj.pk
+    obj_yonke = getattr(obj, "yonke", None)
     result = _safe_delete_or_deactivate(obj)
+    log_action(request, accion="eliminar_catalogo", entidad=model.__name__, entidad_id=obj_pk, yonke=obj_yonke, cambios={"resultado": result})
     if result == "deleted":
         messages.success(request, "Registro eliminado correctamente.")
     elif result == "deactivated":

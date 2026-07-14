@@ -1,5 +1,6 @@
 from django import forms
 from apps.accounts.permissions import is_admin_general, user_yonke
+from apps.core.validators import validate_uploaded_image
 from apps.catalogos.models import CategoriaPieza, Marca, ModeloVehiculo, NombrePieza
 from apps.catalogos.policies import relation_queryset_for_user
 
@@ -94,6 +95,11 @@ class VehiculoForm(forms.ModelForm):
         if modelo and not relation_queryset_for_user(ModeloVehiculo.objects.filter(pk=modelo.pk), self.user).exists():
             raise forms.ValidationError("No puedes usar modelos fuera de tu alcance permitido.")
         return modelo
+
+    def clean_imagen_principal(self):
+        image = self.cleaned_data.get("imagen_principal")
+        validate_uploaded_image(image)
+        return image
 
     def clean(self):
         cleaned = super().clean()
@@ -192,6 +198,11 @@ class PiezaForm(forms.ModelForm):
         if vehiculo and not is_admin_general(self.user) and vehiculo.yonke_id != getattr(current_yonke, "pk", None):
             raise forms.ValidationError("No puedes asociar piezas a vehículos de otro yonke.")
         return vehiculo
+
+    def clean_imagen_principal(self):
+        image = self.cleaned_data.get("imagen_principal")
+        validate_uploaded_image(image)
+        return image
 
     def clean_nombre_normalizado(self):
         nombre = self.cleaned_data.get("nombre_normalizado")

@@ -1,9 +1,11 @@
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounts.permissions import can_create_inventory, is_admin_general, user_yonke, yonkes_queryset_for_user
+from apps.auditoria.services import log_action
 from apps.yonkes.models import Yonke
 
 from .forms import ImportacionExcelForm
@@ -57,6 +59,7 @@ def importaciones_create(request):
         if not registro.yonke_id:
             registro.yonke = user_yonke(request.user)
         registro.save()
+        log_action(request, accion="registrar_importacion", entidad="ImportacionExcel", entidad_id=registro.pk, yonke=registro.yonke, cambios={"archivo": getattr(registro.archivo, "name", ""), "tipo": registro.tipo_importacion})
         return redirect("importaciones-detail", pk=registro.pk)
 
     return render(
@@ -88,3 +91,17 @@ def importaciones_detail(request, pk):
             "aviso_procesamiento": "El procesamiento automático de Excel aún no está implementado. Esta pantalla registra el archivo para procesamiento posterior.",
         },
     )
+
+
+@login_required(login_url="/login/")
+def importaciones_download(request, pk):
+    queryset = ImportacionExcel.objects.select_related("yonke")
+    if not is_admin_general(request.user):
+        queryset = queryset.filter(yonke=user_yonke(request.user))
+    importacion = get_object_or_404(queryset, pk=pk)
+    if not importacion.archivo:
+        raise Http404
+    try:
+        return FileResponse(importacion.archivo.open("rb"), as_attachment=True, filename=importacion.archivo.name.rsplit("/", 1)[-1])
+    except FileNotFoundError as exc:
+        raise Http404 from exc
