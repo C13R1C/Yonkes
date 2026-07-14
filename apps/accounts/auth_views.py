@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 
 from .forms import ProfileSettingsForm, RegisterForm
 from .models import UserProfile
@@ -15,11 +17,22 @@ def _profile(user):
     return profile
 
 
+def _safe_next_url(request):
+    next_url = request.GET.get("next") or request.POST.get("next") or "/"
+    if url_has_allowed_host_and_scheme(
+        url=next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return next_url
+    return "/"
+
+
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("/")
 
-    next_url = request.GET.get("next") or request.POST.get("next") or "/"
+    next_url = _safe_next_url(request)
     error = ""
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
@@ -49,8 +62,8 @@ def register_view(request):
             )
             UserProfile.objects.create(
                 user=user,
-                rol=form.cleaned_data.get("rol") or UserProfile.ROLE_BUSQUEDA,
-                yonke=form.cleaned_data.get("yonke"),
+                rol=UserProfile.ROLE_BUSQUEDA,
+                yonke=None,
                 telefono=form.cleaned_data.get("telefono", ""),
                 activo=True,
             )
@@ -61,8 +74,8 @@ def register_view(request):
     return render(request, "accounts/register.html", {"form": form})
 
 
+@require_POST
 def logout_view(request):
-    # TODO: En producción, usar POST con protección CSRF para logout.
     logout(request)
     messages.info(request, "Sesión cerrada.")
     return redirect("/login/")
