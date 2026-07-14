@@ -65,7 +65,10 @@
                 <div class="user-dropdown" id="user-dropdown-menu" role="menu">
                     <a href="/perfil/" role="menuitem">Perfil</a>
                     <a href="/configuracion/" role="menuitem">Configuración</a>
-                    <a href="/logout/" role="menuitem">Cerrar sesión</a>
+                    <form method="post" action="/logout/" role="menuitem" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit">Cerrar sesión</button>
+                    </form>
                 </div>
                 {% else %}
                 <div class="inline-actions">

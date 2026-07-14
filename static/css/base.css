@@ -3145,3 +3145,25 @@ img.catalog-logo,
     .account-form-hero { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
     .account-form-actions { justify-content: flex-end; }
 }
+
+.user-dropdown .logout-form { margin: 0; }
+
+.user-dropdown .logout-form button {
+    display: block;
+    width: 100%;
+    padding: 11px 12px;
+    color: var(--color-secondary);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-sm);
+    font: inherit;
+    font-weight: 650;
+    text-align: left;
+    cursor: pointer;
+}
+
+.user-dropdown .logout-form button:hover,
+.user-dropdown .logout-form button:focus-visible {
+    color: var(--color-primary);
+    background: var(--color-surface-muted);
+}

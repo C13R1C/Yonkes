@@ -70,8 +70,6 @@ class RegisterForm(forms.Form):
     password = forms.CharField(label="Contraseña", widget=forms.PasswordInput, min_length=8)
     password_confirm = forms.CharField(label="Confirmar contraseña", widget=forms.PasswordInput, min_length=8)
     telefono = forms.CharField(label="Teléfono", max_length=30, required=False)
-    rol = forms.ChoiceField(label="Rol", choices=UserProfile.ROLE_CHOICES, required=False)
-    yonke = forms.ModelChoiceField(label="Yonke", queryset=Yonke.objects.all().order_by("nombre"), required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
