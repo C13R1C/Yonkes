@@ -2,6 +2,7 @@ from django import forms
 from django.db.models import Q
 
 from apps.accounts.permissions import is_admin_general, user_yonke
+from apps.core.validators import validate_uploaded_image
 from apps.yonkes.models import Yonke
 
 from .models import AliasPieza, CategoriaPieza, Marca, ModeloVehiculo, NombrePieza
@@ -76,6 +77,11 @@ class MarcaForm(BaseStyledModelForm):
         model = Marca
         fields = ["yonke", "nombre", "logo", "activo", "visibilidad"]
         labels = {"yonke": "Yonke", "nombre": "Nombre", "logo": "Logo", "activo": "Activo", "visibilidad": "Visibilidad"}
+
+    def clean_logo(self):
+        logo = self.cleaned_data.get("logo")
+        validate_uploaded_image(logo)
+        return logo
 
     def clean_nombre(self):
         nombre = self.cleaned_data.get("nombre")

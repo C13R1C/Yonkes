@@ -6,4 +6,5 @@ urlpatterns = [
     path("importaciones/", html_views.importaciones_list, name="importaciones-list"),
     path("importaciones/nueva/", html_views.importaciones_create, name="importaciones-create"),
     path("importaciones/<int:pk>/", html_views.importaciones_detail, name="importaciones-detail"),
+    path("importaciones/<int:pk>/descargar/", html_views.importaciones_download, name="importaciones-download"),
 ]

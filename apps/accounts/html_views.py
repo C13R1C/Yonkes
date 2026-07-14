@@ -4,6 +4,7 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from apps.auditoria.services import log_action
 
 from apps.yonkes.models import Yonke
 
@@ -61,12 +62,17 @@ def usuarios_list(request):
     )
 
 
+def _managed_users_queryset(actor):
+    qs = User.objects.select_related("profile", "profile__yonke")
+    if is_dueno_yonke(actor):
+        return qs.filter(profile__yonke=user_yonke(actor), profile__rol__in=[UserProfile.ROLE_EMPLEADO, UserProfile.ROLE_BUSQUEDA])
+    return qs
+
+
 @require_user_management
 def usuarios_detail(request, pk):
-    user = get_object_or_404(User.objects.select_related("profile", "profile__yonke"), pk=pk)
+    user = get_object_or_404(_managed_users_queryset(request.user), pk=pk)
     profile = _get_or_create_profile(user)
-    if is_dueno_yonke(request.user) and (profile.yonke_id != getattr(user_yonke(request.user), "pk", None) or profile.rol not in [UserProfile.ROLE_EMPLEADO, UserProfile.ROLE_BUSQUEDA]):
-        raise PermissionDenied
     return render(request, "usuarios/detail.html", {"active_module": "usuarios", "user_obj": user, "profile": profile})
 
 
@@ -89,6 +95,7 @@ def usuarios_create(request):
                 telefono=form.cleaned_data["telefono"],
                 activo=form.cleaned_data["activo"],
             )
+            log_action(request, accion="crear_usuario", entidad="User", entidad_id=user.pk, yonke=form.cleaned_data["yonke"], cambios={"rol": form.cleaned_data["rol"], "activo": form.cleaned_data["activo"]})
         messages.success(request, "Registro creado correctamente.")
         return redirect("usuarios-detail", pk=user.pk)
     return render(request, "usuarios/form.html", {"active_module": "usuarios", "form": form, "is_edit": False})
@@ -96,14 +103,13 @@ def usuarios_create(request):
 
 @require_user_management
 def usuarios_edit(request, pk):
-    user = get_object_or_404(User.objects.select_related("profile"), pk=pk)
+    user = get_object_or_404(_managed_users_queryset(request.user), pk=pk)
     profile = _get_or_create_profile(user)
-    if is_dueno_yonke(request.user) and (profile.yonke_id != getattr(user_yonke(request.user), "pk", None) or profile.rol not in [UserProfile.ROLE_EMPLEADO, UserProfile.ROLE_BUSQUEDA]):
-        raise PermissionDenied
 
     if request.method == "POST":
         form = UsuarioEditForm(request.POST, actor=request.user)
         if form.is_valid():
+            before = {"rol": profile.rol, "yonke": profile.yonke_id, "activo": profile.activo}
             with transaction.atomic():
                 user.username = form.cleaned_data["username"]
                 user.first_name = form.cleaned_data["first_name"]
@@ -118,6 +124,16 @@ def usuarios_edit(request, pk):
                 profile.telefono = form.cleaned_data["telefono"]
                 profile.activo = form.cleaned_data["activo"]
                 profile.save()
+            after = {"rol": profile.rol, "yonke": profile.yonke_id, "activo": profile.activo}
+            cambios = {key: {"antes": before[key], "despues": after[key]} for key in before if before[key] != after[key]}
+            accion = "editar_usuario"
+            if "rol" in cambios:
+                accion = "cambiar_rol_usuario"
+            elif "yonke" in cambios:
+                accion = "cambiar_yonke_usuario"
+            elif "activo" in cambios:
+                accion = "cambiar_estado_usuario"
+            log_action(request, accion=accion, entidad="User", entidad_id=user.pk, yonke=profile.yonke, cambios=cambios)
             messages.success(request, "Registro actualizado correctamente.")
             return redirect("usuarios-detail", pk=user.pk)
     else:

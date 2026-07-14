@@ -21,7 +21,7 @@
   <div class="detail-grid">
     <div class="detail-field"><span class="detail-label">Yonke</span><span class="detail-value">{{ importacion.yonke.nombre }}</span></div>
     <div class="detail-field"><span class="detail-label">Tipo</span><span class="detail-value">{{ importacion.get_tipo_importacion_display }}</span></div>
-    <div class="detail-field"><span class="detail-label">Archivo</span><span class="detail-value">{% if importacion.archivo %}<a href="{{ importacion.archivo.url }}">{{ importacion.archivo.name }}</a>{% else %}—{% endif %}</span></div>
+    <div class="detail-field"><span class="detail-label">Archivo</span><span class="detail-value">{% if importacion.archivo %}<a href="{% url 'importaciones-download' importacion.id %}">{{ importacion.archivo.name }}</a>{% else %}—{% endif %}</span></div>
     <div class="detail-field"><span class="detail-label">Estado</span><span class="detail-value">{{ importacion.get_estado_display }}</span></div>
     <div class="detail-field"><span class="detail-label">Total filas</span><span class="detail-value">{{ importacion.total_filas }}</span></div>
     <div class="detail-field"><span class="detail-label">Filas válidas</span><span class="detail-value">{{ importacion.filas_validas }}</span></div>

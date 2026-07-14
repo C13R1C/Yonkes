@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 
 from apps.yonkes.models import Yonke
 
@@ -55,11 +56,34 @@ class UsuarioBaseForm(forms.Form):
 
 
 class UsuarioCreateForm(UsuarioBaseForm):
-    password = forms.CharField(label="Contraseña", widget=forms.PasswordInput, min_length=8)
+    password = forms.CharField(label="Contraseña", widget=forms.PasswordInput)
+
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+        user_data = User(
+            username=self.cleaned_data.get("username", ""),
+            first_name=self.cleaned_data.get("first_name", ""),
+            last_name=self.cleaned_data.get("last_name", ""),
+            email=self.cleaned_data.get("email", ""),
+        )
+        validate_password(password, user=user_data)
+        return password
 
 
 class UsuarioEditForm(UsuarioBaseForm):
-    password = forms.CharField(label="Contraseña", widget=forms.PasswordInput, required=False, min_length=8)
+    password = forms.CharField(label="Contraseña", widget=forms.PasswordInput, required=False)
+
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+        if password:
+            user_data = User(
+                username=self.cleaned_data.get("username", ""),
+                first_name=self.cleaned_data.get("first_name", ""),
+                last_name=self.cleaned_data.get("last_name", ""),
+                email=self.cleaned_data.get("email", ""),
+            )
+            validate_password(password, user=user_data)
+        return password
 
 
 class RegisterForm(forms.Form):
@@ -67,8 +91,8 @@ class RegisterForm(forms.Form):
     first_name = forms.CharField(label="Nombre", max_length=150, required=False)
     last_name = forms.CharField(label="Apellido", max_length=150, required=False)
     email = forms.EmailField(label="Correo electrónico", required=False)
-    password = forms.CharField(label="Contraseña", widget=forms.PasswordInput, min_length=8)
-    password_confirm = forms.CharField(label="Confirmar contraseña", widget=forms.PasswordInput, min_length=8)
+    password = forms.CharField(label="Contraseña", widget=forms.PasswordInput)
+    password_confirm = forms.CharField(label="Confirmar contraseña", widget=forms.PasswordInput)
     telefono = forms.CharField(label="Teléfono", max_length=30, required=False)
 
     def __init__(self, *args, **kwargs):
@@ -82,6 +106,18 @@ class RegisterForm(forms.Form):
 
     def clean(self):
         cleaned = super().clean()
+        password = cleaned.get("password")
+        if password:
+            user_data = User(
+                username=cleaned.get("username", ""),
+                first_name=cleaned.get("first_name", ""),
+                last_name=cleaned.get("last_name", ""),
+                email=cleaned.get("email", ""),
+            )
+            try:
+                validate_password(password, user=user_data)
+            except forms.ValidationError as error:
+                self.add_error("password", error)
         if cleaned.get("password") != cleaned.get("password_confirm"):
             self.add_error("password_confirm", "Las contraseñas no coinciden.")
         if User.objects.filter(username=cleaned.get("username")).exists():

@@ -6,8 +6,11 @@ from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
+from apps.auditoria.services import log_action
+
 from .forms import ProfileSettingsForm, RegisterForm
 from .models import UserProfile
+from .rate_limit import clear_login_failures, is_login_blocked, record_login_failure
 
 User = get_user_model()
 
@@ -37,12 +40,20 @@ def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            messages.success(request, "Sesión iniciada correctamente.")
-            return redirect(next_url)
-        error = "Credenciales inválidas."
+        if is_login_blocked(request, username):
+            log_action(request, accion="login_bloqueado", entidad="Auth", cambios={"username": username})
+            error = "Credenciales inválidas."
+        else:
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                clear_login_failures(request, username)
+                log_action(request, accion="login_exitoso", entidad="Auth", entidad_id=user.pk)
+                messages.success(request, "Sesión iniciada correctamente.")
+                return redirect(next_url)
+            record_login_failure(request, username)
+            log_action(request, accion="login_fallido", entidad="Auth", cambios={"username": username})
+            error = "Credenciales inválidas."
     return render(request, "accounts/login.html", {"next": next_url, "error": error})
 
 
@@ -67,6 +78,7 @@ def register_view(request):
                 telefono=form.cleaned_data.get("telefono", ""),
                 activo=True,
             )
+            log_action(request, accion="crear_usuario", entidad="User", entidad_id=user.pk, cambios={"origen": "registro_publico", "rol": UserProfile.ROLE_BUSQUEDA})
         login(request, user)
         messages.success(request, "Cuenta creada correctamente.")
         return redirect("/")
@@ -76,6 +88,7 @@ def register_view(request):
 
 @require_POST
 def logout_view(request):
+    log_action(request, accion="logout", entidad="Auth", entidad_id=getattr(request.user, "pk", ""))
     logout(request)
     messages.info(request, "Sesión cerrada.")
     return redirect("/login/")
